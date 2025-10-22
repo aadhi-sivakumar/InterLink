@@ -137,3 +137,51 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# React Native packager
+.expo/
+.expo-shared/
+.expo-dev/
+.expo-packager/
+.expo-settings.json
+
+# Metro bundler cache
+metro-cache/
+.expo/
+.expo-shared/
+.expo-dev/
+.expo-settings.json
+
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+*.keystore
+*.jks
+local.properties
+
+# iOS build artifacts
+ios/build/
+ios/Pods/
+ios/DerivedData/
+ios/*.xcworkspace
+ios/*.xcodeproj/project.xcworkspace/
+ios/*.xcodeproj/xcuserdata/
+
+# Xcode user data
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+
+# Misc
+*.swp
+*.swo
+*.DS_Store
+npm-debug.log*
+yarn-error.log*
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
