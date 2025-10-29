@@ -12,12 +12,11 @@ const COLORS = {
 
 export default function SignupScreen() {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleCreate = () => {
-    router.push("/(tabs)/personalityquiz");
+    router.push("/personalityquiz");
   };
 
   return (
@@ -29,11 +28,6 @@ export default function SignupScreen() {
       
       <Text style={styles.title}>Create your account</Text>
       <Text style={styles.subtitle}>Let's get you set up</Text>
-
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput style={styles.input} placeholder="Enter your full name" placeholderTextColor="#999" value={name} onChangeText={setName} />
-      </View>
 
       <View style={styles.fieldGroup}>
         <Text style={styles.label}>Email</Text>

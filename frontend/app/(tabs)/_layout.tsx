@@ -18,12 +18,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="personalityquiz"
-        options={{
-          title: "Personality Quiz",
-        }}
-      />
+      
     </Tabs>
   );
 }
