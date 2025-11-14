@@ -19,7 +19,7 @@ export default function CreateEventScreen() {
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   
 
   const groups = [
@@ -83,7 +83,7 @@ export default function CreateEventScreen() {
   };
 
   const handleNext = () => {
-    if (eventName && startDate && endDate && startTime && endTime && selectedGroup) {
+    if (eventName && startDate && endDate && startTime && endTime && selectedGroups.length > 0) {
       router.push({
         pathname: "/createeventdetails",
         params: {
@@ -92,7 +92,7 @@ export default function CreateEventScreen() {
           endDate,
           startTime,
           endTime,
-          selectedGroup,
+          selectedGroups: JSON.stringify(selectedGroups),
         },
       });
     }
@@ -108,25 +108,49 @@ export default function CreateEventScreen() {
   };
 
   const handleTimeChange = (time: string, isStart: boolean) => {
+    // Allow empty input
+    if (time === "") {
+      if (isStart) {
+        setStartTime("");
+      } else {
+        setEndTime("");
+      }
+      return;
+    }
+    
     // Remove non-numeric characters except colon
     let cleaned = time.replace(/[^0-9:]/g, '');
     
-    // Auto-format as user types (HH:MM)
-    if (cleaned.length <= 2) {
-      cleaned = cleaned;
-    } else if (cleaned.length <= 4) {
-      cleaned = cleaned.slice(0, 2) + ':' + cleaned.slice(2);
-    } else {
+    // Limit to reasonable length (max 5 chars for HH:MM)
+    if (cleaned.length > 5) {
       cleaned = cleaned.slice(0, 5);
     }
     
-    // Validate time format (HH:MM, 00-23:00-59)
-    if (cleaned.length === 5) {
+    const currentTime = isStart ? startTime : endTime;
+    
+    if (cleaned.length < currentTime.length) {
+      if (isStart) {
+        setStartTime(cleaned);
+      } else {
+        setEndTime(cleaned);
+      }
+      return;
+    }
+
+    if (!cleaned.includes(':') && cleaned.length >= 3) {
+      // Auto-insert colon after 2 digits when typing
+      cleaned = cleaned.slice(0, 2) + ':' + cleaned.slice(2);
+    }
+    
+    // Validate only when we have a complete time (HH:MM format)
+    if (cleaned.length === 5 && cleaned.includes(':')) {
       const [hours, minutes] = cleaned.split(':');
-      const h = parseInt(hours);
-      const m = parseInt(minutes);
-      if (h > 23 || m > 59) {
-        return; // Don't update if invalid
+      if (hours && minutes) {
+        const h = parseInt(hours);
+
+        if (isNaN(h) || isNaN(m) || h > 23 || m > 59) {
+          return; // Don't update if invalid
+        }
       }
     }
     
@@ -151,7 +175,7 @@ export default function CreateEventScreen() {
         <Text style={styles.title}>Create New Event</Text>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Event Name</Text>
+          <Text style={styles.label}>Event Name *</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter event name"
@@ -162,7 +186,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Select Dates</Text>
+          <Text style={styles.label}>Select Dates *</Text>
           <Calendar
             onDayPress={handleDateSelect}
             markedDates={getMarkedDates()}
@@ -213,10 +237,10 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Select Times</Text>
+          <Text style={styles.label}>Select Times *</Text>
           <View style={styles.timeContainer}>
             <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>Start Time</Text>
+              <Text style={styles.timeLabel}>Start Time *</Text>
               <TextInput
                 style={styles.timeInput}
                 placeholder="14:30 (24h format)"
@@ -231,7 +255,7 @@ export default function CreateEventScreen() {
               )}
             </View>
             <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>End Time</Text>
+              <Text style={styles.timeLabel}>End Time *</Text>
               <TextInput
                 style={styles.timeInput}
                 placeholder="16:00 (24h format)"
@@ -249,41 +273,52 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Visibility - Select Group</Text>
+          <Text style={styles.label}>Visibility - Select Groups *</Text>
           <View style={styles.groupsContainer}>
-            {groups.map((group) => (
-              <TouchableOpacity
-                key={group.id}
-                style={[
-                  styles.groupButton,
-                  selectedGroup === group.id && styles.groupButtonSelected,
-                ]}
-                onPress={() => setSelectedGroup(group.id)}
-              >
-                <Text
+            {groups.map((group) => {
+              const isSelected = selectedGroups.includes(group.id);
+              return (
+                <TouchableOpacity
+                  key={group.id}
                   style={[
-                    styles.groupButtonText,
-                    selectedGroup === group.id && styles.groupButtonTextSelected,
+                    styles.groupButton,
+                    isSelected && styles.groupButtonSelected,
                   ]}
+                  onPress={() => {
+                    if (isSelected) {
+                      // Remove from selection
+                      setSelectedGroups(selectedGroups.filter(id => id !== group.id));
+                    } else {
+                      // Add to selection
+                      setSelectedGroups([...selectedGroups, group.id]);
+                    }
+                  }}
                 >
-                  {group.name}
-                </Text>
-                {selectedGroup === group.id && (
-                  <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                )}
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.groupButtonText,
+                      isSelected && styles.groupButtonTextSelected,
+                    ]}
+                  >
+                    {group.name}
+                  </Text>
+                  {isSelected && (
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         <TouchableOpacity
           style={[
             styles.button,
-            (!eventName || !startDate || !endDate || !startTime || !endTime || !selectedGroup) &&
+            (!eventName || !startDate || !endDate || !startTime || !endTime || selectedGroups.length === 0) &&
               styles.buttonDisabled,
           ]}
           onPress={handleNext}
-          disabled={!eventName || !startDate || !endDate || !startTime || !endTime || !selectedGroup}
+          disabled={!eventName || !startDate || !endDate || !startTime || !endTime || selectedGroups.length === 0}
         >
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>

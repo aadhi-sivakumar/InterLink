@@ -89,6 +89,21 @@ export default function CreateEventDetailsScreen() {
             hour12: true 
           });
 
+      // Parse selected groups
+      const selectedGroups = params.selectedGroups 
+        ? JSON.parse(params.selectedGroups as string) 
+        : [];
+      
+      // Get group names for display
+      const groups = [
+        { id: "1", name: "Friend Group 1" },
+        { id: "2", name: "Friend Group 3" },
+      ];
+      const groupNames = selectedGroups
+        .map((groupId: string) => groups.find(g => g.id === groupId)?.name)
+        .filter(Boolean)
+        .join(", ");
+
       // Create new event object
       const newEvent = {
         id: Date.now(), // Use timestamp as unique ID
@@ -102,7 +117,8 @@ export default function CreateEventDetailsScreen() {
         endDate: params.endDate as string,
         startTime: params.startTime as string,
         endTime: params.endTime as string,
-        group: params.selectedGroup as string,
+        groups: selectedGroups,
+        group: groupNames || "No groups selected",
       };
 
       // Add new event to the beginning of the array
@@ -132,7 +148,7 @@ export default function CreateEventDetailsScreen() {
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.push("/(tabs)/createevent")}
           style={styles.backButton}
         >
           <Ionicons name="chevron-back" size={24} color={COLORS.primary} />
