@@ -10,6 +10,49 @@ const defaultEvents = [
     { event: "Friendsgiving Party", image:"https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "November 25th", time: "4:00 pm", location: "1234 ABC St. ", id: 3 }
   ];
 
+const formatTime = (time: string) => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(":");
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minutes} ${ampm}`;
+};
+
+const formatDateRange = (event: any) => {
+  if (event.startDate && event.endDate) {
+    const startDateObj = new Date(event.startDate);
+    const endDateObj = new Date(event.endDate);
+    const formattedStartDate = startDateObj.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const formattedEndDate = endDateObj.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+    return formattedStartDate === formattedEndDate 
+      ? formattedStartDate 
+      : `${formattedStartDate} - ${formattedEndDate}`;
+  }
+  
+  return event.date || "";
+};
+
+const formatTimeRange = (event: any) => {
+  if (event.startTime && event.endTime) {
+    const formattedStartTime = formatTime(event.startTime);
+    const formattedEndTime = formatTime(event.endTime);
+    return formattedStartTime === formattedEndTime
+      ? formattedStartTime
+      : `${formattedStartTime} - ${formattedEndTime}`;
+  }
+  
+  return event.time || "";
+};
+
 export default function Dashboard() {
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -72,8 +115,8 @@ export default function Dashboard() {
         <View key={item.id} style={styles.card}>
             <Image source={{uri: item.image }} style={styles.image}></Image>
             <Text style={styles.eventName}>{item.event}</Text>
-            <Text style={styles.eventDetails}>{item.time}</Text>
-            <Text style={styles.eventDetails}>{item.date}</Text>
+            <Text style={styles.eventDetails}>{formatTimeRange(item)}</Text>
+            <Text style={styles.eventDetails}>{formatDateRange(item)}</Text>
             <Text style={[styles.eventDetails, {marginBottom: 10}]}>{item.location}</Text>
         </View>
 

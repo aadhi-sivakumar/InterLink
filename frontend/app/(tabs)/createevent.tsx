@@ -147,9 +147,14 @@ export default function CreateEventScreen() {
       const [hours, minutes] = cleaned.split(':');
       if (hours && minutes) {
         const h = parseInt(hours);
+        const m = parseInt(minutes);
 
         if (isNaN(h) || isNaN(m) || h > 23 || m > 59) {
-          return; // Don't update if invalid
+          return; 
+        }
+        
+        if (minutes.length === 1) {
+          cleaned = hours + ':' + '0' + minutes;
         }
       }
     }

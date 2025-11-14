@@ -73,21 +73,41 @@ export default function CreateEventDetailsScreen() {
       const storedEvents = await AsyncStorage.getItem('events');
       const existingEvents = storedEvents ? JSON.parse(storedEvents) : [];
       
-      // Format dates for display
+      // Format dates for display 
       const startDateObj = new Date(params.startDate as string);
       const endDateObj = new Date(params.endDate as string);
-      const formattedDate = startDateObj.toLocaleDateString('en-US', { 
+      const formattedStartDate = startDateObj.toLocaleDateString('en-US', { 
         month: 'long', 
         day: 'numeric',
         year: 'numeric'
       });
-      const formattedTime = params.startTime 
+      const formattedEndDate = endDateObj.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      const formattedDate = formattedStartDate === formattedEndDate 
+        ? formattedStartDate 
+        : `${formattedStartDate} - ${formattedEndDate}`;
+      
+      const formattedStartTime = params.startTime 
         ? formatTime(params.startTime as string)
         : startDateObj.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
             hour12: true 
           });
+      const formattedEndTime = params.endTime 
+        ? formatTime(params.endTime as string)
+        : endDateObj.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+          });
+      const formattedTime = formattedStartTime === formattedEndTime
+        ? formattedStartTime
+        : `${formattedStartTime} - ${formattedEndTime}`;
 
       // Parse selected groups
       const selectedGroups = params.selectedGroups 
