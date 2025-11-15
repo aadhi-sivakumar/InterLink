@@ -23,7 +23,7 @@ const newEvents = [
     location: "1234 Address St, City, State",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 1",
-    image: "",
+    image: "https://images.unsplash.com/photo-1534797258760-1bd2cc95a5bd?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y29va291dHxlbnwwfHwwfHx8MA%3D%3D",
     peopleGoing: 5,
   },
 ];
@@ -35,7 +35,7 @@ const upcomingEvents = [
     location: "1234 Address St, Sample City, TX",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 1",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/14461/14461861.png",
     isGoing: null,
   },
   {
@@ -44,16 +44,16 @@ const upcomingEvents = [
     location: "123 Runner Dr, Fantasy World, TX",
     time: "9:00 am - 12:00 pm",
     date: "Today",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1661717466350-b5a0756a5c86?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y29va2luZyUyMGNvbXBldGl0aW9ufGVufDB8fDB8fHww",
     isGoing: null,
   },
   {
     id: 7,
-    title: "Master Cook Competition",
+    title: "Charcuterie board",
     location: "123 Runner Dr, Fantasy World, TX",
     time: "6:00 am - 12:00 pm",
     date: "Jan 21st",
-    image: "",
+    image: "https://images.unsplash.com/photo-1611764197743-702a4d01463b?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2hhcmN1dGVyaWUlMjBib2FyZHxlbnwwfHwwfHx8MA%3D%3D",
     isGoing: null,
   },
 ];

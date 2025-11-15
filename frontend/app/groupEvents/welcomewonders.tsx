@@ -23,7 +23,7 @@ const newEvents = [
     location: "Online",
     time: "4:00 pm - 8:00 pm",
     date: null,
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/2652/2652673.png",
     peopleGoing: 5,
   },
 ];
@@ -35,7 +35,7 @@ const upcomingEvents = [
     location: "Online",
     time: "8:00 pm - 9:00 pm",
     date: "Nov 28",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/2102/2102170.png",
     isGoing: null,
   },
   {
@@ -44,7 +44,7 @@ const upcomingEvents = [
     location: "1800 W Testing St, Codebusters, TX",
     time: "7:00 pm - 10:00 pm",
     date: "Today",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/272/272186.png",
     isGoing: null,
   },
 ];

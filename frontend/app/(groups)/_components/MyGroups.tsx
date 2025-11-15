@@ -3,12 +3,10 @@ import { useState } from 'react';
 import { useRouter } from "expo-router";
 
 export default function MyGroups(props: any) {
-    const[next, setNext] = useState<{ [key: number]: boolean}>({});
     const router = useRouter();
     const { joined  = {}} = props; 
     return (
     <View style={styles.container}>
-      <ScrollView>
       <Text style={styles.subheading}>My Groups</Text>
       {/* group 0 */}
 <TouchableOpacity style={[styles.card, { flexDirection: "row", alignItems: "center", height: 100}]}
@@ -122,9 +120,7 @@ export default function MyGroups(props: any) {
   )
 }
 
-    </ScrollView>
-    </View>
-    
+    </View> 
   );
 }
 

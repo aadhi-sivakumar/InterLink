@@ -28,7 +28,7 @@ const newEvents = [
     location: "Online",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 12",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/12343/12343398.png",
     peopleGoing: 10,
   },
 ];
@@ -40,16 +40,16 @@ const upcomingEvents = [
     location: "Online",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 12",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/12343/12343398.png",
     isGoing: null,
   },
   {
     id: 6,
-    title: "Study Session",
+    title: "Group Study Session",
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "9:00 am - 12:00 pm",
     date: "Today",
-    image: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzZXVtfGVufDB8fDB8fHww",
+    image: "https://cdn-icons-png.flaticon.com/128/6747/6747157.png",
     isGoing: null,
   },
 ];
@@ -57,11 +57,11 @@ const upcomingEvents = [
 const previousEvents = [
   {
     id: 7,
-    title: "Study Session",
+    title: "Group Study Session",
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "9:00 am - 12:00 pm",
     date: "Sept 17",
-    image: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzZXVtfGVufDB8fDB8fHww",
+    image: "https://cdn-icons-png.flaticon.com/128/6747/6747157.png",
   },
   {
     id: 8,
@@ -69,7 +69,7 @@ const previousEvents = [
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "12:00 pm - 2:00 pm",
     date: "Sept 23",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/1239/1239719.png",
   },
   {
     id: 9,
@@ -77,7 +77,7 @@ const previousEvents = [
     location: "Online",
     time: "8:00 am - 9:00 am",
     date: "Oct 15",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1661369931884-0706c99d88b3?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZmluZCUyMGElMjBmcmllbmR8ZW58MHx8MHx8fDA%3D",
   },
 ];
 

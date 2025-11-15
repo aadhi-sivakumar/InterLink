@@ -20,7 +20,7 @@ const newEvents = [
     location: "1234 Address St, City, State",
     time: "12:00 pm - 1:00 pm",
     date: "Dec 1",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1663040143756-8effcd4f9451?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bXVzaWNhbCUyMGNoYWlyc3xlbnwwfHwwfHx8MA%3D%3D",
     peopleGoing: 3,
   },
   {
@@ -29,7 +29,7 @@ const newEvents = [
     location: "1234 Address St, City, State",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 25",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1681830630610-9f26c9729b75?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8bXVzaWMlMjBmZXN0aXZhbHxlbnwwfHwwfHx8MA%3D%3D",
     peopleGoing: 3,
   },
 ];
@@ -41,7 +41,7 @@ const upcomingEvents = [
     location: "1234 Address St, City, State",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 25",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1681830630610-9f26c9729b75?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8bXVzaWMlMjBmZXN0aXZhbHxlbnwwfHwwfHx8MA%3D%3D",
     isGoing: null,
   },
    {
@@ -50,7 +50,7 @@ const upcomingEvents = [
     location: "1234 Address St, City, State",
     time: "12:00 pm - 1:00 pm",
     date: "Dec 1",
-    image: "",
+    image: "https://plus.unsplash.com/premium_photo-1663040143756-8effcd4f9451?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bXVzaWNhbCUyMGNoYWlyc3xlbnwwfHwwfHx8MA%3D%3D",
     isGoing: null,
   },
 ];

@@ -23,7 +23,7 @@ const newEvents = [
     location: "1234 Address St, City, State",
     time: "4:00 pm - 8:00 pm",
     date: "Dec 18",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/1965/1965140.png",
     peopleGoing: null,
   },
    {
@@ -32,7 +32,7 @@ const newEvents = [
     location: "Online",
     time: "1:00 pm - 2:00 pm",
     date: "Jan 2nd",
-    image: "",
+    image: "https://images.unsplash.com/photo-1600536347460-b07c77b9472c?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGVhJTIwcGFydHl8ZW58MHx8MHx8fDA%3D",
     peopleGoing: 7,
   },
 ];
@@ -44,7 +44,7 @@ const upcomingEvents = [
     location: "Online",
     time: "4:00 pm - 6:00 pm",
     date: "Nov 28",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/562/562460.png",
     isGoing: null,
   },
 ];
@@ -56,7 +56,7 @@ const previousEvents = [
     location: "ABC St, Fantasy World, TX",
     time: "12:00 pm - 2:00 pm",
     date: "Oct 15",
-    image: "",
+    image: "https://cdn-icons-png.flaticon.com/128/2054/2054138.png",
   },
 ];
 
