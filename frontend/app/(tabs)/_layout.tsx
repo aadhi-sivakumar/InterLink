@@ -19,14 +19,23 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="createevent"
+        name="groups"
         options={{
-          title: "Create Event",
+          title: "Groups",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add" size={size} color={color} />
+            <Ionicons name="people-outline" size={size} color={color} />
           ),
         }}
       />
+      <Tabs.Screen
+      name="groups"
+        options={{
+          title: "Groups",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+        />
       
     </Tabs>
   );
