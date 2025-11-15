@@ -5,6 +5,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { joinEvent, leaveEvent} from "../../utils/eventstorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const saveEventToStorage = async (event: any) => 
+{
+  const stored = await AsyncStorage.getItem("events");
+  const existing = stored ? JSON.parse(stored) : [];
+
+  //only add if not already saved
+  if (!existing.some((e: any) => e.id === event.id)) {
+    existing.push({
+      id: event.id,
+      event: event.title,
+      image: event.image || "",
+      date: event.date || "",
+      time: event.time || "",
+      location: event.location || "",
+    });
+
+    await AsyncStorage.setItem("events", JSON.stringify(existing));
+  }
+};
 
 const groupMembers = [
   { id: 1, name: "John Doe", avatar: "https://i.pravatar.cc/150?img=1", online: true },
@@ -23,7 +44,7 @@ const groupMembers = [
 
 const newEvents = [
   {
-    id: 4,
+    id: 12,
     title: "Career Insights",
     location: "Online",
     time: "4:00 pm - 8:00 pm",
@@ -35,7 +56,7 @@ const newEvents = [
 
 const upcomingEvents = [
   {
-    id: 5,
+    id: 13,
     title: "Career Insights",
     location: "Online",
     time: "4:00 pm - 8:00 pm",
@@ -44,7 +65,7 @@ const upcomingEvents = [
     isGoing: null,
   },
   {
-    id: 6,
+    id: 14,
     title: "Study Session",
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "9:00 am - 12:00 pm",
@@ -56,7 +77,7 @@ const upcomingEvents = [
 
 const previousEvents = [
   {
-    id: 7,
+    id: 15,
     title: "Study Session",
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "9:00 am - 12:00 pm",
@@ -64,7 +85,7 @@ const previousEvents = [
     image: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzZXVtfGVufDB8fDB8fHww",
   },
   {
-    id: 8,
+    id: 16,
     title: "Network with professionals",
     location: "ABC 123 S Univ Rd, Fantasy World, JA",
     time: "12:00 pm - 2:00 pm",
@@ -72,7 +93,7 @@ const previousEvents = [
     image: "",
   },
   {
-    id: 9,
+    id: 17,
     title: "Find a friend",
     location: "Online",
     time: "8:00 am - 9:00 am",
@@ -96,12 +117,13 @@ export default function FriendGroupScreen() {
   const [activeTab, setActiveTab] = useState<'events' | 'chat'>('events');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [eventStatuses, setEventStatuses] = useState<Record<number, boolean | null>>({
-    5: null,
-    6: null,
+    12: null,
+    13: null,
+    14: null
   });
   const [message, setMessage] = useState('');
 
-  const handleEventResponse = async (eventId: number, isGoing: boolean) => {
+  const handleEventResponse = async (eventId: number, isGoing: boolean, eventObj: any) => {
     setEventStatuses(prev => ({
       ...prev,
       [eventId]: isGoing,
@@ -109,6 +131,7 @@ export default function FriendGroupScreen() {
 
     if(isGoing)
     {
+        await saveEventToStorage(eventObj);
         await joinEvent(eventId);
     }
     else
@@ -143,7 +166,7 @@ export default function FriendGroupScreen() {
             <View style={styles.eventActions}>
               <TouchableOpacity
                 style={[styles.actionButton, isGoing === false && styles.actionButtonActive, { marginRight: 8 }]}
-                onPress={() => handleEventResponse(event.id, false)}
+                onPress={() => handleEventResponse(event.id, false, event)}
               >
                 <Ionicons 
                   name="close" 
@@ -153,7 +176,7 @@ export default function FriendGroupScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, isGoing === true && styles.actionButtonActive]}
-                onPress={() => handleEventResponse(event.id, true)}
+                onPress={() => handleEventResponse(event.id, true, event)}
               >
                 <Ionicons 
                   name="checkmark" 

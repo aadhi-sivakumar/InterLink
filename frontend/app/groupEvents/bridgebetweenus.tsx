@@ -5,6 +5,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { joinEvent, leaveEvent} from "../../utils/eventstorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const saveEventToStorage = async (event: any) => 
+{
+  const stored = await AsyncStorage.getItem("events");
+  const existing = stored ? JSON.parse(stored) : [];
+
+  //only add if not already saved
+  if (!existing.some((e: any) => e.id === event.id)) {
+    existing.push({
+      id: event.id,
+      event: event.title,
+      image: event.image || "",
+      date: event.date || "",
+      time: event.time || "",
+      location: event.location || "",
+    });
+
+    await AsyncStorage.setItem("events", JSON.stringify(existing));
+  }
+};
 
 const groupMembers = [
   { id: 1, name: "John Doe", avatar: "https://i.pravatar.cc/150?img=1", online: true },
@@ -18,7 +39,7 @@ const groupMembers = [
 
 const newEvents = [
   {
-    id: 4,
+    id: 22,
     title: "Migration Story Picnic",
     location: "1234 Address St, City, State",
     time: "4:00 pm - 8:00 pm",
@@ -27,7 +48,7 @@ const newEvents = [
     peopleGoing: null,
   },
    {
-    id: 5,
+    id: 23,
     title: "Tea party - talk about budegting tips",
     location: "Online",
     time: "1:00 pm - 2:00 pm",
@@ -39,7 +60,7 @@ const newEvents = [
 
 const upcomingEvents = [
   {
-    id: 6,
+    id: 24,
     title: "City research - talk about places discovered",
     location: "Online",
     time: "4:00 pm - 6:00 pm",
@@ -51,7 +72,7 @@ const upcomingEvents = [
 
 const previousEvents = [
   {
-    id: 7,
+    id: 25,
     title: "Speed-Friending",
     location: "ABC St, Fantasy World, TX",
     time: "12:00 pm - 2:00 pm",
@@ -78,7 +99,7 @@ export default function FriendGroupScreen() {
   });
   const [message, setMessage] = useState('');
 
-  const handleEventResponse = async (eventId: number, isGoing: boolean) => {
+  const handleEventResponse = async (eventId: number, isGoing: boolean, eventObj: any) => {
     setEventStatuses(prev => ({
       ...prev,
       [eventId]: isGoing,
@@ -86,6 +107,7 @@ export default function FriendGroupScreen() {
 
     if(isGoing)
     {
+        await saveEventToStorage(eventObj);
         await joinEvent(eventId);
     }
     else
@@ -120,7 +142,7 @@ export default function FriendGroupScreen() {
             <View style={styles.eventActions}>
               <TouchableOpacity
                 style={[styles.actionButton, isGoing === false && styles.actionButtonActive, { marginRight: 8 }]}
-                onPress={() => handleEventResponse(event.id, false)}
+                onPress={() => handleEventResponse(event.id, false, event)}
               >
                 <Ionicons 
                   name="close" 
@@ -130,7 +152,7 @@ export default function FriendGroupScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, isGoing === true && styles.actionButtonActive]}
-                onPress={() => handleEventResponse(event.id, true)}
+                onPress={() => handleEventResponse(event.id, true, event)}
               >
                 <Ionicons 
                   name="checkmark" 
