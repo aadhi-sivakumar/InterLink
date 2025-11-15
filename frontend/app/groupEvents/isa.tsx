@@ -139,31 +139,31 @@ export default function FriendGroupScreen() {
               {event.peopleGoing} People Going
             </Text>
           )}
-          {isUpcoming && (
-            <View style={styles.eventActions}>
-              <TouchableOpacity
-                style={[styles.actionButton, isGoing === false && styles.actionButtonActive, { marginRight: 8 }]}
-                onPress={() => handleEventResponse(event.id, false)}
-              >
-                <Ionicons 
-                  name="close" 
-                  size={20} 
-                  color={isGoing === false ? "#fff" : "#000"} 
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, isGoing === true && styles.actionButtonActive]}
-                onPress={() => handleEventResponse(event.id, true)}
-              >
-                <Ionicons 
-                  name="checkmark" 
-                  size={20} 
-                  color={isGoing === true ? "#fff" : "#000"} 
-                />
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
+        {isUpcoming && (
+          <View style={styles.eventActions}>
+            <TouchableOpacity
+              style={[styles.actionButton, isGoing === false && styles.actionButtonActive, { marginRight: 8 }]}
+              onPress={() => handleEventResponse(event.id, false)}
+            >
+              <Ionicons 
+                name="close" 
+                size={20} 
+                color={isGoing === false ? "#fff" : "#000"} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, isGoing === true && styles.actionButtonActive]}
+              onPress={() => handleEventResponse(event.id, true)}
+            >
+              <Ionicons 
+                name="checkmark" 
+                size={20} 
+                color={isGoing === true ? "#fff" : "#000"} 
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -448,7 +448,8 @@ const styles = StyleSheet.create({
   },
   eventActions: {
     flexDirection: 'row',
-    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionButton: {
     width: 32,
