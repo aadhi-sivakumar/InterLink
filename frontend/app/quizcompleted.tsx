@@ -16,19 +16,19 @@ const COLORS = {
 
 const GROUPS = [
   {
-    id: 1,
+    id: 2,
     name: "Musical Wonders",
     description: "Play music. Create music. Sing music.",
     image: "https://cdn-icons-png.flaticon.com/128/3083/3083417.png"
   },
   {
-    id: 2,
+    id: 3,
     name: "Cooking Ninjas",
     description: "Fun chats, cookout nights, and cozy cafe hangs with food enthusiasts.",
     image: "https://cdn-icons-png.flaticon.com/128/1027/1027128.png"
   },
   {
-    id: 3,
+    id: 5,
     name: "Town Travellers",
     description: "Explore neighborhoods, try new spots, and discover hidden city gems.",
     image: "https://cdn-icons-png.flaticon.com/128/854/854894.png"
