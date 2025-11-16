@@ -54,6 +54,48 @@ const formatTimeRange = (event: any) => {
   return event.time || "";
 };
 
+const sortEvents = (events: any[]) => {
+  const parseDate = (e: any) => {
+    if (e.startDate) return new Date(e.startDate).getTime();
+    if (e.date) {
+      const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+      const match = e.date.toLowerCase().match(/(\w+)\s+(\d+)/);
+      if (match) {
+        const month = months.indexOf(match[1]);
+        const day = parseInt(match[2]);
+        const year = new Date().getFullYear();
+        return new Date(year, month, day).getTime();
+      }
+    }
+    return 0;
+  };
+  
+  const getTimeValue = (e: any) => {
+    if (e.startTime) {
+      const [h, m] = e.startTime.split(':').map(Number);
+      return h * 60 + m;
+    }
+    if (e.time) {
+      const match = e.time.match(/(\d+):(\d+)\s*(am|pm)/i);
+      if (match) {
+        let h = parseInt(match[1]);
+        const m = parseInt(match[2]);
+        if (match[3].toLowerCase() === 'pm' && h !== 12) h += 12;
+        if (match[3].toLowerCase() === 'am' && h === 12) h = 0;
+        return h * 60 + m;
+      }
+    }
+    return 0;
+  };
+  
+  return [...events].sort((a, b) => {
+    const dateA = parseDate(a);
+    const dateB = parseDate(b);
+    if (dateA !== dateB) return dateA - dateB;
+    return getTimeValue(a) - getTimeValue(b);
+  });
+};
+
 
 
 export default function Dashboard() {
@@ -63,23 +105,24 @@ export default function Dashboard() {
   const [events, setEvents] = useState(defaultEvents);
   const [joinedEventIds, setJoinedEventIds] = useState<number[]>([]);
 
+  // Combine and sort all events
+  const allEvents = useMemo(() => {
+    const combined = [...defaultEvents, ...events];
+    const unique = combined.filter((e, i, arr) => arr.findIndex(ev => ev.id === e.id) === i);
+    return sortEvents(unique);
+  }, [events]);
+
   const searchFilter = useMemo(() => {
-    if (!search.trim()) {
-      return events;
-    }
-    const searched = search.toUpperCase();
-    return events.filter(eventlist => {
+    const filtered = !search.trim() ? allEvents : allEvents.filter(eventlist => {
+      const searched = search.toUpperCase();
       const eventName = (eventlist.event || '').toUpperCase();
       const location = (eventlist.location || '').toUpperCase();
       const date = formatDateRange(eventlist).toUpperCase();
       const time = formatTimeRange(eventlist).toUpperCase();
-      
-      return eventName.includes(searched) || 
-             location.includes(searched) || 
-             date.includes(searched) ||
-             time.includes(searched);
-    }); 
-  }, [search, events])
+      return eventName.includes(searched) || location.includes(searched) || date.includes(searched) || time.includes(searched);
+    });
+    return sortEvents(filtered);
+  }, [search, allEvents])
   // Load events from AsyncStorage when screen is focused
   useFocusEffect(
     React.useCallback(() => {
@@ -140,38 +183,11 @@ export default function Dashboard() {
       <Text style={styles.heading}>Home</Text>
       <TextInput style={styles.searchBar} placeholder="Search" value={search} onChangeText={setSearch}/>
       <Text style={styles.subheading}>My Upcoming Events</Text>
-      {/* Always show default events */}
-      {defaultEvents
-        .filter(ev => {
-          // Apply search filter to default events
-          if (!search.trim()) return true;
-          const searched = search.toUpperCase();
-          const eventName = (ev.event || '').toUpperCase();
-          const location = (ev.location || '').toUpperCase();
-          const date = formatDateRange(ev).toUpperCase();
-          const time = formatTimeRange(ev).toUpperCase();
-          
-          return eventName.includes(searched) || 
-                 location.includes(searched) || 
-                 date.includes(searched) ||
-                 time.includes(searched);
-        })
-        .map(ev => (
-          <View key= {ev.id} style={styles.card}>
-            <Image source ={{ uri: ev.image }} style={styles.image} />
-            <Text style={styles.eventName}>{ev.event}</Text>
-            <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
-            <Text style={styles.eventDetails}>{formatDateRange(ev)}</Text>
-            <Text style={[styles.eventDetails, {marginBottom: 10}]}>{ev.location}</Text>
-          </View>
-        ))
-      }
-      {/* Show joined events from storage */}
       {searchFilter
-        .filter(ev => joinedEventIds.includes(ev.id)) //only show joined
+        .filter(ev => defaultEvents.some(de => de.id === ev.id) || joinedEventIds.includes(ev.id))
         .map(ev => (
-          <View key= {ev.id} style={styles.card}>
-            <Image source ={{ uri: ev.image }} style={styles.image} />
+          <View key={ev.id} style={styles.card}>
+            <Image source={{ uri: ev.image }} style={styles.image} />
             <Text style={styles.eventName}>{ev.event}</Text>
             <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
             <Text style={styles.eventDetails}>{formatDateRange(ev)}</Text>

@@ -61,7 +61,7 @@ export default function LoginScreen() {
       <Text style={styles.subtitle}>Log in to continue</Text>
 
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>Email <Text style={styles.requiredAsterisk}>*</Text></Text>
         <TextInput 
           style={[styles.input, emailError && styles.inputError]} 
           placeholder="Enter your email" 
@@ -79,7 +79,7 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>Password <Text style={styles.requiredAsterisk}>*</Text></Text>
         <TextInput 
           style={[styles.input, passwordError && styles.inputError]} 
           placeholder="Enter your password" 
@@ -187,6 +187,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+  },
+  requiredAsterisk: {
+    color: "#FF0000",
   },
 });
 

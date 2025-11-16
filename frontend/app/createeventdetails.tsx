@@ -208,7 +208,7 @@ export default function CreateEventDetailsScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Address *</Text>
+          <Text style={styles.label}>Address <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
             style={styles.input}
             placeholder="Enter event address"
@@ -220,7 +220,7 @@ export default function CreateEventDetailsScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Event Description *</Text>
+          <Text style={styles.label}>Event Description <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             placeholder="Describe your event..."
@@ -373,6 +373,9 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: "600",
+  },
+  requiredAsterisk: {
+    color: "#FF0000",
   },
 });
 

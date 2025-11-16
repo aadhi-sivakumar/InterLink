@@ -314,7 +314,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              {field}
+              {field} <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             <TextInput
               style={{
@@ -501,7 +501,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              What is your home country?
+              What is your home country? <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             <TextInput
               style={{
@@ -530,7 +530,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              What languages can you speak?
+              What languages can you speak? <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             <TextInput
               style={{
@@ -558,7 +558,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              How long have you lived in your current country?
+              How long have you lived in your current country? <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             {timeOptions.map((option) => {
               const selected = cultureInfo.timeInCountry === option;
@@ -600,7 +600,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              What is your reason for coming here?
+              What is your reason for coming here? <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             <TextInput
               style={{
@@ -632,7 +632,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              What kind of support are you looking for? (Select all that apply)
+              What kind of support are you looking for? (Select all that apply) <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             {supportOptions.map((option) => {
               const selected = cultureInfo.supportLookingFor.includes(option);
@@ -684,7 +684,7 @@ export default function App() {
                 marginBottom: 8,
               }}
             >
-              What traditions are important to you?
+              What traditions are important to you? <Text style={{ color: "#FF0000" }}>*</Text>
             </Text>
             <TextInput
               style={{

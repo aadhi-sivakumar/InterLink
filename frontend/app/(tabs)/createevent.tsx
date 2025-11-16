@@ -239,7 +239,7 @@ export default function CreateEventScreen() {
       <Text style={styles.heading}>Create New Event</Text>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Event Name *</Text>
+          <Text style={styles.label}>Event Name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
             style={styles.input}
             placeholder="Enter event name"
@@ -250,7 +250,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Select Dates *</Text>
+          <Text style={styles.label}>Select Dates <Text style={styles.requiredAsterisk}>*</Text></Text>
           <Calendar
             onDayPress={handleDateSelect}
             markedDates={getMarkedDates()}
@@ -297,10 +297,10 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Select Times *</Text>
+          <Text style={styles.label}>Select Times <Text style={styles.requiredAsterisk}>*</Text></Text>
           <View style={styles.timeContainer}>
             <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>Start Time *</Text>
+              <Text style={styles.timeLabel}>Start Time <Text style={styles.requiredAsterisk}>*</Text></Text>
               <TextInput
                 style={styles.timeInput}
                 placeholder="14:30 (24h format)"
@@ -315,7 +315,7 @@ export default function CreateEventScreen() {
               )}
             </View>
             <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>End Time *</Text>
+              <Text style={styles.timeLabel}>End Time <Text style={styles.requiredAsterisk}>*</Text></Text>
               <TextInput
                 style={styles.timeInput}
                 placeholder="16:00 (24h format)"
@@ -333,7 +333,7 @@ export default function CreateEventScreen() {
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Visibility - Select Groups *</Text>
+          <Text style={styles.label}>Visibility - Select Groups <Text style={styles.requiredAsterisk}>*</Text></Text>
           <View style={styles.groupsContainer}>
             {groups.map((group) => {
               const isSelected = selectedGroups.includes(group.id);
@@ -566,6 +566,9 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
+  },
+  requiredAsterisk: {
+    color: "#FF0000",
   },
 });
 
