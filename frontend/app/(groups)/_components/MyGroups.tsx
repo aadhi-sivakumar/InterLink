@@ -47,7 +47,7 @@ export default function MyGroups(props: any) {
 {
   joined[2] && (
 <TouchableOpacity style={[styles.card, { flexDirection: "row", alignItems: "center", height: 100}]}
-        onPress={() => router.push({ pathname: "/groupEvents/musicalwonders", params: { groupName: "Town Travellers" } })}>        
+        onPress={() => router.push({ pathname: "/groupEvents/musicalwonders", params: { groupName: "Musical Wonders" } })}>        
         <Image source={{uri: "https://cdn-icons-png.flaticon.com/128/3083/3083417.png"}} style={styles.profileImage}></Image>
         <View style={styles.cardRow}>
             <View style={{ flexDirection: "column", flexShrink: 1}}>
@@ -236,7 +236,8 @@ const styles = StyleSheet.create({
 
     groupName: {
       fontWeight: "600",
-      marginLeft: 20
+      marginLeft: 20,
+      padding: 10
     },
 
     online: {

@@ -118,7 +118,8 @@ export default function Dashboard() {
               <TouchableOpacity
                 style={styles.menuItem}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                onPress={() => { setMenuOpen(false); router.replace('/welcome'); }}
+                onPress={() => { setMenuOpen(false); 
+                router.replace('/welcome'); }}
               >
                 <Text style={styles.menuText}>Sign out</Text>
               </TouchableOpacity>

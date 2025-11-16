@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useState, useEffect } from 'react'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const COLORS = {
   background: "#FFFFFF",
@@ -15,18 +17,21 @@ const COLORS = {
 const GROUPS = [
   {
     id: 1,
-    name: "Friend group 1",
-    description: "Pick-up games, match watch-alongs, and weekend runs for all levels.",
+    name: "Musical Wonders",
+    description: "Play music. Create music. Sing music.",
+    image: "https://cdn-icons-png.flaticon.com/128/3083/3083417.png"
   },
   {
     id: 2,
-    name: "Friend group 2",
-    description: "Book chats, movie nights, and cozy cafe hangs with story lovers.",
+    name: "Cooking Ninjas",
+    description: "Fun chats, cookout nights, and cozy cafe hangs with food enthusiasts.",
+    image: "https://cdn-icons-png.flaticon.com/128/1027/1027128.png"
   },
   {
     id: 3,
-    name: "Friend group 3",
+    name: "Town Travellers",
     description: "Explore neighborhoods, try new spots, and discover hidden city gems.",
+    image: "https://cdn-icons-png.flaticon.com/128/854/854894.png"
   },
 ];
 
@@ -35,6 +40,24 @@ export default function QuizCompleted() {
 
   const goHome = () => router.replace("/(tabs)/home");
   const goBack = () => router.push("/personalityquiz?step=summary");
+
+  const [joined, setJoin] = useState<{[key: number]:boolean}>({});
+  useEffect (() => {
+    const savedGroups = async () => {
+      const saved = await AsyncStorage.getItem('joinedGroups');
+      if(saved){
+        setJoin(JSON.parse(saved));
+      }
+    }; 
+    savedGroups();
+  }, []);
+
+    useEffect (() => {
+    const saveGroups = async () => {
+      await AsyncStorage.setItem('joinedGroups', JSON.stringify(joined));
+    }; 
+    saveGroups();
+  }, [joined]);
 
   return (
     <View style={styles.container}>
@@ -51,13 +74,13 @@ export default function QuizCompleted() {
 
         {GROUPS.map((g) => (
           <View key={g.id} style={styles.card}>
-            <Image source={require("../assets/images/group.jpg")} style={styles.groupImage} />
+            <Image source={{ uri: g.image}} style={styles.groupImage} />
             <View style={{ flex: 1 }}>
               <Text style={styles.groupTitle}>{g.name}</Text>
               <Text style={styles.groupDesc}>{g.description}</Text>
             </View>
-            <TouchableOpacity style={styles.joinButton} onPress={goHome}>
-              <Text style={styles.joinText}>Join</Text>
+            <TouchableOpacity style={[styles.joinButton, joined[g.id] ? styles.joinActive : styles.joinInactive]} onPress={() => {setJoin((prev) => ({...prev, [g.id]: true}))}}>
+              <Text> Join </Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -152,6 +175,11 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontWeight: "600",
   },
+  joinActive: {
+        backgroundColor: "#b4ecb4"
+    },
+    joinInactive : {
+    },
   bottomRow: {
     flexDirection: "row",
     justifyContent: "space-between",

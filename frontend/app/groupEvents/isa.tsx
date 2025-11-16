@@ -510,6 +510,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontStyle: 'italic',
     color: '#000',
+    padding: 10
   },
   chevron: {
     marginLeft: 8,
