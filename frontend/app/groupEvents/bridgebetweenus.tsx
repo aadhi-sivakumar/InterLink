@@ -95,6 +95,7 @@ export default function FriendGroupScreen() {
   
   const [activeTab, setActiveTab] = useState<'events' | 'chat'>('events');
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [eventStatuses, setEventStatuses] = useState<Record<number, boolean | null>>({
     22: null,
     23: null,
@@ -333,20 +334,39 @@ export default function FriendGroupScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/groups")} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.titleContainer}
-          onPress={() => setShowMembersModal(true)}
-        >
-          <Text style={styles.headerTitle}>{groupName}</Text>
-          <Ionicons name="chevron-down" size={20} color="#000" style={styles.chevron} />
-        </TouchableOpacity>
-        <View style={styles.placeholder} />
+        <View style={styles.profileContainer}>
+          <TouchableOpacity
+            style={styles.profileButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={() => setMenuOpen(!menuOpen)}
+          >
+            <View style={styles.profileCircle}>
+              <Text style={styles.profileInitials}>U</Text>
+            </View>
+          </TouchableOpacity>
+          {menuOpen && (
+            <View style={styles.menuInFlow} pointerEvents="auto">
+              <TouchableOpacity
+                style={styles.menuItem}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => { setMenuOpen(false); router.replace('/welcome'); }}
+              >
+                <Text style={styles.menuText}>Sign out</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
+      <TouchableOpacity 
+        onPress={() => setShowMembersModal(true)}
+      >
+        <Text style={styles.heading}>{groupName}</Text>
+      </TouchableOpacity>
 
       <View style={styles.toggleBar}>
         <TouchableOpacity
@@ -457,6 +477,31 @@ export default function FriendGroupScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push("/(tabs)/home")}
+        >
+          <Ionicons name="home-outline" size={24} color="#000" />
+          <Text style={styles.navLabel}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push("/(tabs)/groups")}
+        >
+          <Ionicons name="people-outline" size={24} color="#000" />
+          <Text style={styles.navLabel}>Groups</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push("/(tabs)/createevent")}
+        >
+          <Ionicons name="add" size={24} color="#000" />
+          <Text style={styles.navLabel}>Create Event</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -465,49 +510,82 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    padding: 20,
+    paddingBottom: 80,
   },
-  header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 8,
+    paddingTop: 10,
   },
   backButtonText: {
     fontSize: 18,
     fontWeight: "600",
     color: "#000",
+    marginLeft: 4,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
+  profileContainer: {
+    position: "relative",
+    height: 44,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    fontStyle: 'italic',
-    color: '#000',
+  profileButton: {
+    paddingTop: 10,
   },
-  chevron: {
-    marginLeft: 8,
+  profileCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
   },
-  placeholder: {
-    width: 40,
+  profileInitials: {
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+  menuInFlow: {
+    position: "absolute",
+    top: 44,
+    right: 0,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingVertical: 6,
+    width: 140,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    zIndex: 999,
+  },
+  menuItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  menuText: {
+    fontSize: 14,
+    color: "#111827",
+  },
+  heading: { 
+    marginTop: 10,
+    fontSize: 24, 
+    fontWeight: "700", 
+    textAlign: "center", 
   },
   toggleBar: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: -20,
+    marginHorizontal: 0,
+    marginTop: 20,
     marginBottom: 8,
     borderRadius: 20,
     padding: 0,
@@ -526,7 +604,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   toggleButtonActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#7CA7D9',
   },
   toggleText: {
     fontSize: 16,
@@ -744,6 +822,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     borderWidth: 2,
     borderColor: '#fff',
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    paddingVertical: 10,
+    paddingBottom: 20,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  navItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  navLabel: {
+    fontSize: 12,
+    marginTop: 4,
+    color: '#000',
   },
   usersSection: {
     marginBottom: 12,
