@@ -6,13 +6,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getJoinedEventIds } from "../../utils/eventstorage";
 
 const defaultEvents = [
-    { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 1st", time: "2:00 pm", location: "1234 Sesame St. ", id: 1 },
-    { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 2nd", time: "9:00 am", location: "456 Boat Port ", id: 2 },
-    { event: "Friendsgiving Party", image:"https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "November 25th", time: "4:00 pm", location: "1234 ABC St. ", id: 3 }
+    { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 1st", time: "2:00 PM", location: "1234 Sesame St. ", id: 1 },
+    { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 2nd", time: "9:00 AM", location: "456 Boat Port ", id: 2 },
+    { event: "Friendsgiving Party", image:"https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "November 25th", time: "4:00 PM", location: "1234 ABC St. ", id: 3 }
   ];
 
 const formatTime = (time: string) => {
   if (!time) return "";
+  if (time.toLowerCase().includes("am") || time.toLowerCase().includes("pm")) 
+  {
+    return time.replace(/\s*(am|pm)/i, " $1").toUpperCase();
+  }
   const [hours, minutes] = time.split(":");
   const hour = parseInt(hours);
   const ampm = hour >= 12 ? "PM" : "AM";

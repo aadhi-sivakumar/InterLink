@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar } from "react-native-calendars";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const COLORS = {
   primary: "#7CA7D9",
@@ -29,6 +30,12 @@ export default function CreateEventScreen() {
   const [endDate, setEndDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [startTimeDate, setStartTimeDate] = useState<Date>(new Date());
+  const [endTimeDate, setEndTimeDate] = useState<Date>(new Date());
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [tempStartTimeDate, setTempStartTimeDate] = useState<Date | null>(null);
+  const [tempEndTimeDate, setTempEndTimeDate] = useState<Date | null>(null);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -132,15 +139,6 @@ export default function CreateEventScreen() {
     }
   };
 
-  const formatTime = (time: string) => {
-    if (!time) return "";
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   const formatDateString = (dateString: string) => {
     const [year, month, day] = dateString.split('-').map(Number);
     const date = new Date(year, month - 1, day);
@@ -151,64 +149,57 @@ export default function CreateEventScreen() {
     });
   };
 
-  const handleTimeChange = (time: string, isStart: boolean) => {
-    // Allow empty input
-    if (time === "") {
-      if (isStart) {
-        setStartTime("");
-      } else {
-        setEndTime("");
-      }
-      return;
-    }
-    
-    // Remove non-numeric characters except colon
-    let cleaned = time.replace(/[^0-9:]/g, '');
-    
-    // Limit to reasonable length (max 5 chars for HH:MM)
-    if (cleaned.length > 5) {
-      cleaned = cleaned.slice(0, 5);
-    }
-    
-    const currentTime = isStart ? startTime : endTime;
-    
-    if (cleaned.length < currentTime.length) {
-      if (isStart) {
-        setStartTime(cleaned);
-      } else {
-        setEndTime(cleaned);
-      }
-      return;
-    }
+  const formatDeviceTime = (date: Date) =>
+  date.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
 
-    if (!cleaned.includes(':') && cleaned.length >= 3) {
-      // Auto-insert colon after 2 digits when typing
-      cleaned = cleaned.slice(0, 2) + ':' + cleaned.slice(2);
-    }
-    
-    // Validate only when we have a complete time (HH:MM format)
-    if (cleaned.length === 5 && cleaned.includes(':')) {
-      const [hours, minutes] = cleaned.split(':');
-      if (hours && minutes) {
-        const h = parseInt(hours);
-        const m = parseInt(minutes);
-
-        if (isNaN(h) || isNaN(m) || h > 23 || m > 59) {
-          return; 
-        }
-        
-        if (minutes.length === 1) {
-          cleaned = hours + ':' + '0' + minutes;
-        }
-      }
-    }
-    
-    if (isStart) {
-      setStartTime(cleaned);
-    } else {
-      setEndTime(cleaned);
-    }
+  const openStartPicker = () => 
+  {
+    setTempStartTimeDate(startTimeDate);
+    setShowStartPicker(true);
   };
+  
+  const openEndPicker = () => 
+  {
+    setTempEndTimeDate(endTimeDate);
+    setShowEndPicker(true);
+  };
+
+  const handleStartTimeChange = (event: any, date?: Date) => 
+  {
+    if (Platform.OS === "ios") 
+    {
+      if (date) //update as user scrolls
+      {
+        setTempStartTimeDate(date);
+      }
+    }
+    else {
+    setShowStartPicker(false);
+    if (event.type === "set" && date) 
+    {
+      setStartTimeDate(date);
+      setStartTime(formatDeviceTime(date));
+    }
+  }
+};
+
+const handleEndTimeChange = (event: any, date?: Date) =>
+{
+  if (Platform.OS === "ios")
+  {
+    if (date)
+    {
+      setTempEndTimeDate(date);
+    }
+  } else {
+    setShowEndPicker(false);
+    if (event.type === "set" && date) 
+    {
+      setEndTimeDate(date);
+      setEndTime(formatDeviceTime(date));
+    }
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -287,50 +278,73 @@ export default function CreateEventScreen() {
             <View style={styles.dateRangeContainer}>
               <Text style={styles.dateRangeText}>
                 {formatDateString(startDate)}
-                {startTime && ` at ${formatTime(startTime)}`}
+                {startTime && ` at ${startTime}`}
                 {" - "}
                 {formatDateString(endDate)}
-                {endTime && ` at ${formatTime(endTime)}`}
+                {endTime && ` at ${endTime}`}
               </Text>
             </View>
           )}
         </View>
-
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Select Times <Text style={styles.requiredAsterisk}>*</Text></Text>
-          <View style={styles.timeContainer}>
-            <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>Start Time <Text style={styles.requiredAsterisk}>*</Text></Text>
-              <TextInput
-                style={styles.timeInput}
-                placeholder="14:30 (24h format)"
-                placeholderTextColor="#999"
-                value={startTime}
-                onChangeText={(text) => handleTimeChange(text, true)}
-                keyboardType="numeric"
-                maxLength={5}
-              />
-              {startTime && (
-                <Text style={styles.timeDisplay}>{formatTime(startTime)}</Text>
-              )}
-            </View>
-            <View style={styles.timeInputGroup}>
-              <Text style={styles.timeLabel}>End Time <Text style={styles.requiredAsterisk}>*</Text></Text>
-              <TextInput
-                style={styles.timeInput}
-                placeholder="16:00 (24h format)"
-                placeholderTextColor="#999"
-                value={endTime}
-                onChangeText={(text) => handleTimeChange(text, false)}
-                keyboardType="numeric"
-                maxLength={5}
-              />
-              {endTime && (
-                <Text style={styles.timeDisplay}>{formatTime(endTime)}</Text>
-              )}
-            </View>
-          </View>
+          <Text style={styles.label}>
+            Select Times <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.timeContainer}>
+              {/* Start time */}
+              <View style={styles.timeInputGroup}>
+                <Text style={styles.timeLabel}>
+                  Start Time <Text style={styles.requiredAsterisk}>*</Text>
+                  </Text>
+                  <TouchableOpacity
+            style={styles.timeInput}
+            onPress={() => {
+              if (Platform.OS === "ios") 
+                {
+                openStartPicker();
+              } else {
+                setShowStartPicker(true);
+              }
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                color: startTime ? COLORS.textPrimary : "#999",
+              }}
+            >
+              {startTime || "Select start time"}
+            </Text>
+          </TouchableOpacity>
         </View>
+    {/* End Time */}
+    <View style={styles.timeInputGroup}>
+      <Text style={styles.timeLabel}>
+        End Time <Text style={styles.requiredAsterisk}>*</Text>
+      </Text>
+      <TouchableOpacity
+        style={styles.timeInput}
+        onPress={() => {
+          if (Platform.OS === "ios") {
+            openEndPicker();
+          } else {
+            setShowEndPicker(true);
+          }
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            color: endTime ? COLORS.textPrimary : "#999",
+          }}
+        >
+          {endTime || "Select end time"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+    </View>
+  </View>
+
 
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Visibility - Select Groups <Text style={styles.requiredAsterisk}>*</Text></Text>
@@ -383,7 +397,118 @@ export default function CreateEventScreen() {
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+
+            {/* iOS bottom-sheet style pickers */}
+      {Platform.OS === "ios" && (
+        <>
+          {/* Start time modal */}
+          <Modal
+            visible={showStartPicker}
+            transparent
+            animationType="fade"
+            onRequestClose={() => {
+              setShowStartPicker(false);
+              setTempStartTimeDate(null);
+            }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select start time</Text>
+                <DateTimePicker
+                  value={tempStartTimeDate || startTimeDate}
+                  mode="time"
+                  display="spinner"
+                  onChange={handleStartTimeChange}
+                />
+                <View style={styles.modalButtonsRow}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowStartPicker(false);
+                      setTempStartTimeDate(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const finalDate = tempStartTimeDate || startTimeDate;
+                      setStartTimeDate(finalDate);
+                      setStartTime(formatDeviceTime(finalDate));
+                      setShowStartPicker(false);
+                      setTempStartTimeDate(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Done ✓</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+
+          {/* End time modal */}
+          <Modal
+            visible={showEndPicker}
+            transparent
+            animationType="fade"
+            onRequestClose={() => {
+              setShowEndPicker(false);
+              setTempEndTimeDate(null);
+            }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select end time</Text>
+                <DateTimePicker
+                  value={tempEndTimeDate || endTimeDate}
+                  mode="time"
+                  display="spinner"
+                  onChange={handleEndTimeChange}
+                />
+                <View style={styles.modalButtonsRow}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowEndPicker(false);
+                      setTempEndTimeDate(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const finalDate = tempEndTimeDate || endTimeDate;
+                      setEndTimeDate(finalDate);
+                      setEndTime(formatDeviceTime(finalDate));
+                      setShowEndPicker(false);
+                      setTempEndTimeDate(null);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Done ✓</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </>
+      )}
+
+      {/* Android: use native dialogs */}
+      {Platform.OS === "android" && showStartPicker && (
+        <DateTimePicker
+          value={startTimeDate}
+          mode="time"
+          display="default"
+          onChange={handleStartTimeChange}
+        />
+      )}
+      {Platform.OS === "android" && showEndPicker && (
+        <DateTimePicker
+          value={endTimeDate}
+          mode="time"
+          display="default"
+          onChange={handleEndTimeChange}
+        />
+      )}
+    </View> 
   );
 }
 
@@ -511,6 +636,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     backgroundColor: "#fff",
+    justifyContent: "center",
+    paddingVertical: 0, 
   },
   timeDisplay: {
     marginTop: 6,
@@ -569,6 +696,38 @@ const styles = StyleSheet.create({
   },
   requiredAsterisk: {
     color: "#FF0000",
+  },
+    modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#7CA7D9",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  modalButtonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
 });
 
