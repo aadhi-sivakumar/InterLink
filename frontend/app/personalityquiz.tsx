@@ -9,6 +9,8 @@ import {
   Image,
   Alert,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -412,6 +414,34 @@ const [profileError, setProfileError] = useState("")
   const renderQuiz = () => (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ paddingTop: 20 }}>
+        {cameFromSummary && (
+          <TouchableOpacity
+            onPress={() => {
+              if (selectedOption) {
+                setAnswers({ ...answers, [currentQuestion]: selectedOption });
+              }
+              setCurrentStep(4);
+              setCameFromSummary(false);
+            }}
+            style={{
+              backgroundColor: COLORS.primary,
+              paddingVertical: 16,
+              borderRadius: 12,
+              alignItems: "center",
+              marginBottom: 20,
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.textPrimary,
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+            >
+              ← Back to Summary
+            </Text>
+          </TouchableOpacity>
+        )}
         <View
           style={{
             height: 4,
@@ -505,8 +535,18 @@ const [profileError, setProfileError] = useState("")
     const supportOptions = ["Meeting people from home", "Learning local language", "Finding friends", "Cultural events"];
 
     return (
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <View style={{ paddingTop: 20 }}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView 
+          style={{ flex: 1 }} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          <View style={{ paddingTop: 20 }}>
           <Text
             style={{
               fontSize: 28,
@@ -788,6 +828,7 @@ const [profileError, setProfileError] = useState("")
           
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     );
   };
 
@@ -806,13 +847,13 @@ const [profileError, setProfileError] = useState("")
         </Text>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: COLORS.textSecondary,
             textAlign: "center",
             marginBottom: 40,
           }}
         >
-          Please upload a photo to confirm your identity
+          Please upload a photo to confirm your identity <Text style={{ color: "#FF0000" }}>*</Text>
         </Text>
         <View style={{ alignItems: "center", marginBottom: 40 }}>
           <TouchableOpacity
