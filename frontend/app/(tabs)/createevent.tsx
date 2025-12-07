@@ -211,7 +211,7 @@ const handleEndTimeChange = (event: any, date?: Date) =>
             onPress={() => setMenuOpen(!menuOpen)}
           >
             <View style={styles.profileCircle}>
-              <Text style={styles.profileInitials}>U</Text>
+              <Text style={styles.profileInitials}>Profile</Text>
             </View>
           </TouchableOpacity>
           {menuOpen && (
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     position: "relative",
-    height: 44,
+    height: 74,
   },
   profileButton: {
     paddingTop: 10,
@@ -538,9 +538,9 @@ const styles = StyleSheet.create({
     textAlign: "center", 
   },
   profileCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
@@ -550,10 +550,11 @@ const styles = StyleSheet.create({
   profileInitials: {
     fontWeight: "700",
     color: "#1F2937",
+    fontSize: 11,
   },
   menuInFlow: {
     position: "absolute",
-    top: 44,
+    top: 74,
     right: 0,
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
