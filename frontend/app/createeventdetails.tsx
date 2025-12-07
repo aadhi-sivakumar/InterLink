@@ -30,15 +30,6 @@ export default function CreateEventDetailsScreen() {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
 
-  const formatTime = (time: string) => {
-    if (!time) return "";
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   const pickImage = async () => {
     // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -93,19 +84,21 @@ export default function CreateEventDetailsScreen() {
         : `${formattedStartDate} - ${formattedEndDate}`;
       
       const formattedStartTime = params.startTime 
-        ? formatTime(params.startTime as string)
+        ? (params.startTime as string)
         : startDateObj.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
             hour12: true 
           });
+
       const formattedEndTime = params.endTime 
-        ? formatTime(params.endTime as string)
+        ? (params.endTime as string)
         : endDateObj.toLocaleTimeString('en-US', { 
             hour: 'numeric', 
             minute: '2-digit',
             hour12: true 
           });
+          
       const formattedTime = formattedStartTime === formattedEndTime
         ? formattedStartTime
         : `${formattedStartTime} - ${formattedEndTime}`;
@@ -196,14 +189,14 @@ export default function CreateEventDetailsScreen() {
               day: 'numeric',
               year: 'numeric'
             })}
-            {params.startTime && ` at ${formatTime(params.startTime as string)}`}
+            {params.startTime && ` at ${(params.startTime as string)}`}
             {" - "}
             {new Date(params.endDate as string).toLocaleDateString('en-US', { 
               month: 'long', 
               day: 'numeric',
               year: 'numeric'
             })}
-            {params.endTime && ` at ${formatTime(params.endTime as string)}`}
+            {params.endTime && ` at ${(params.endTime as string)}`}
           </Text>
         </View>
 
