@@ -107,13 +107,15 @@ export default function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [events, setEvents] = useState(defaultEvents);
   const [joinedEventIds, setJoinedEventIds] = useState<number[]>([]);
+  const [removedEventIds, setRemovedEventIds] = useState<number[]>([]);
 
-  // Combine and sort all events
+  // Combine and sort all events, excluding removed ones
   const allEvents = useMemo(() => {
     const combined = [...defaultEvents, ...events];
     const unique = combined.filter((e, i, arr) => arr.findIndex(ev => ev.id === e.id) === i);
-    return sortEvents(unique);
-  }, [events]);
+    // Filter out removed events
+    return sortEvents(unique.filter(ev => !removedEventIds.includes(ev.id)));
+  }, [events, removedEventIds]);
 
   const searchFilter = useMemo(() => {
     const filtered = !search.trim() ? allEvents : allEvents.filter(eventlist => {
@@ -146,6 +148,12 @@ export default function Dashboard() {
             await AsyncStorage.setItem('events', JSON.stringify(defaultEvents));
             setEvents(defaultEvents);
           }
+          
+          // Load removed event IDs
+          const storedRemoved = await AsyncStorage.getItem('removedEventIds');
+          if (storedRemoved) {
+            setRemovedEventIds(JSON.parse(storedRemoved));
+          }
         } catch (error) {
           console.error('Error loading events:', error);
           setEvents(defaultEvents);
@@ -160,6 +168,28 @@ export default function Dashboard() {
       loadJoinedEvents(); //loads which events the user joined
     }, [])
   );
+
+  const handleRemoveEvent = async (eventId: number) => {
+    try {
+      // Check if it's a default event or user-added event
+      const isDefaultEvent = defaultEvents.some(de => de.id === eventId);
+      
+      if (isDefaultEvent) {
+        // For default events, just mark as removed
+        const updatedRemoved = [...removedEventIds, eventId];
+        setRemovedEventIds(updatedRemoved);
+        await AsyncStorage.setItem('removedEventIds', JSON.stringify(updatedRemoved));
+      } else {
+        // For user-added events, remove from events array and AsyncStorage
+        const updatedEvents = events.filter(ev => ev.id !== eventId);
+        setEvents(updatedEvents);
+        await AsyncStorage.setItem('events', JSON.stringify(updatedEvents));
+      }
+    } catch (error) {
+      console.error('Error removing event:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -190,31 +220,14 @@ export default function Dashboard() {
       </View>
       <Text style={styles.heading}>Home</Text>
       <TextInput style={styles.searchBar} placeholder="Search" value={search} onChangeText={setSearch}/>
-        {/* SEARCH mode */}
-        {search.trim().length > 0 ? (
-          <>
-            <Text style={styles.resultsLabel}>Results for "{search.trim()}"</Text>
-            {filteredEvents.length === 0 ? (
-              <Text style={styles.resultsLabel}>No events found.</Text>
-            ) : (
-              filteredEvents.map(ev => (
-                <View key={ev.id} style={styles.card}>
-                  <Image source={{ uri: ev.image }} style={styles.image} />
-                  <Text style={styles.eventName}>{ev.event}</Text>
-                  <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
-                  <Text style={styles.eventDetails}>{formatDateRange(ev)}</Text>
-                  <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
-                    {ev.location}
-                  </Text>
-                </View>
-              ))
-            )}
-          </>
-        ) : (
-          <>
-            {/* DEFAULT mode */}
-            <Text style={styles.subheading}>My Upcoming Events</Text>
-            {filteredEvents.map(ev => (
+      {/* SEARCH mode */}
+      {search.trim().length > 0 ? (
+        <>
+          <Text style={styles.resultsLabel}>Results for "{search.trim()}"</Text>
+          {filteredEvents.length === 0 ? (
+            <Text style={styles.resultsLabel}>No events found.</Text>
+          ) : (
+            filteredEvents.map(ev => (
               <View key={ev.id} style={styles.card}>
                 <Image source={{ uri: ev.image }} style={styles.image} />
                 <Text style={styles.eventName}>{ev.event}</Text>
@@ -223,11 +236,40 @@ export default function Dashboard() {
                 <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
                   {ev.location}
                 </Text>
+                <TouchableOpacity
+                  onPress={() => handleRemoveEvent(ev.id)}
+                  style={styles.removeButton}
+                >
+                  <Text style={styles.removeButtonText}>Remove</Text>
+                </TouchableOpacity>
               </View>
-            ))}
-          </>
-        )}
-      </ScrollView>
+            ))
+          )}
+        </>
+      ) : (
+        <>
+          {/* DEFAULT mode */}
+          <Text style={styles.subheading}>My Upcoming Events</Text>
+          {filteredEvents.map(ev => (
+            <View key={ev.id} style={styles.card}>
+              <Image source={{ uri: ev.image }} style={styles.image} />
+              <Text style={styles.eventName}>{ev.event}</Text>
+              <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
+              <Text style={styles.eventDetails}>{formatDateRange(ev)}</Text>
+              <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
+                {ev.location}
+              </Text>
+              <TouchableOpacity
+                onPress={() => handleRemoveEvent(ev.id)}
+                style={styles.removeButton}
+              >
+                <Text style={styles.removeButtonText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </>
+      )}
+    </ScrollView>
     </View>
   );
 }
@@ -337,6 +379,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
+    position: "relative",
   },
 
   image: {
@@ -382,4 +425,19 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     marginBottom: 8,
   },
+
+  removeButton: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: "#FF0000",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  removeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  }
 });

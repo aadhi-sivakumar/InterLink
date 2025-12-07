@@ -788,13 +788,13 @@ export default function App() {
         </Text>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: COLORS.textSecondary,
             textAlign: "center",
             marginBottom: 40,
           }}
         >
-          Please upload a photo to confirm your identity
+          Please upload a photo to confirm your identity <Text style={{ color: "#FF0000" }}>*</Text>
         </Text>
 
         <View style={{ alignItems: "center", marginBottom: 40 }}>
