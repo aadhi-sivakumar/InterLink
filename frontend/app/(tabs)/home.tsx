@@ -9,9 +9,9 @@ import { hasCompletedOnboarding, completeOnboarding } from "../../utils/onboardi
 import GlowWrapper from "../../components/GlowWrapper";
 
 const defaultEvents = [
-  { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 1st", time: "2:00 PM", location: "1234 Sesame St. ", id: 1 },
-  { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 2nd", time: "9:00 AM", location: "456 Boat Port ", id: 2 },
-  { event: "Friendsgiving Party", image: "https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "November 25th", time: "4:00 PM", location: "1234 ABC St. ", id: 3 }
+  { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 12th", startTime: "14:00", endTime: "19:00", location: "1234 Sesame St. ", id: 1 },
+  { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 15th", startTime: "09:00", endTime: "12:00", location: "456 Boat Port ", id: 2 },
+  { event: "Friendsgiving Party", image: "https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "December 10th", startTime: "16:00", endTime: "18:00", location: "1234 ABC St. ", id: 3 }
 ];
 
 const formatTime = (time: string) => {
