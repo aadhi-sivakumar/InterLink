@@ -1,17 +1,20 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity, Modal, Animated } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity, Modal, Animated, Dimensions } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getJoinedEventIds } from "../../utils/eventstorage";
 import Tooltip from "../../components/Tooltip";
 import { hasCompletedOnboarding, completeOnboarding } from "../../utils/onboarding";
 import GlowWrapper from "../../components/GlowWrapper";
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 const defaultEvents = [
-  { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 12th", startTime: "14:00", endTime: "19:00", location: "1234 Sesame St. ", id: 1 },
-  { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 15th", startTime: "09:00", endTime: "12:00", location: "456 Boat Port ", id: 2 },
-  { event: "Friendsgiving Party", image: "https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "December 10th", startTime: "16:00", endTime: "18:00", location: "1234 ABC St. ", id: 3 }
+  { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 12th", startTime: "14:00", endTime: "19:00", location: "1234 Sesame St. ", id: 1, group: "Welcome Wonders", description: "Boat Party with music, food, games, and fun!" },
+  { event: "Cornhole Toss", image: "https://www.cornholeworldwide.com/wp-content/uploads/2020/07/shutterstock_717048238.jpg", date: "December 15th", startTime: "09:00", endTime: "12:00", location: "456 Boat Port ", id: 2, group: "Welcome Wonders", description: "Grab a friend and toss some bags into the cornhole!" },
+  { event: "Friendsgiving Party", image: "https://www.mashed.com/img/gallery/52-thanksgiving-dishes-to-make-you-the-star-of-friendsgiving/intro-1637165015.jpg", date: "December 10th", startTime: "16:00", endTime: "18:00", location: "1234 ABC St. ", id: 3, group: "Welcome Wonders", description: "This is a party with food and games." }
 ];
 
 const formatTime = (time: string) => {
@@ -119,6 +122,7 @@ const COLORS = {
 
 export default function Dashboard() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [events, setEvents] = useState(defaultEvents);
@@ -135,13 +139,15 @@ export default function Dashboard() {
   const searchBarRef = useRef<View>(null);
   const eventCardRef = useRef<View>(null);
   const profileRef = useRef<View>(null);
+  const createEventRef = useRef<View>(null);
+  const groupsRef = useRef<View>(null);
   const glowAnim = useRef(new Animated.Value(1)).current;
   
   const onboardingSteps = [
     {
       id: 'welcome',
       title: 'Welcome to InterLink! 👋',
-      description: 'Let\'s take a quick tour to help you get started. Tap anywhere to continue.',
+      description: 'Let\'s take a quick tour to help you get started.',
       ref: null,
     },
     {
@@ -161,6 +167,18 @@ export default function Dashboard() {
       title: 'Your Profile',
       description: 'Tap your profile icon to access settings and sign out.',
       ref: profileRef,
+    },
+    {
+      id: 'createEvent',
+      title: 'Create Event',
+      description: 'Tap on the Create Event Button to create a new event for a group.',
+      ref: createEventRef,
+    },
+    {
+      id: 'groups',
+      title: 'Groups',
+      description: 'Tap the Groups button to join groups and view the groups you are part of.',
+      ref: groupsRef,
     },
   ];
 
@@ -241,6 +259,29 @@ export default function Dashboard() {
               setTooltipPosition({ x: pageX, y: pageY, width, height });
             });
           }, 100);
+        } else if (step.id === 'createEvent' || step.id === 'groups') {
+          const squareSize = 60; 
+          const squareY = SCREEN_HEIGHT - squareSize + 5;
+          
+          if (step.id === 'createEvent') {
+            const buttonCenterX = (5 * SCREEN_WIDTH) / 6;
+            const squareX = buttonCenterX - squareSize / 2;
+            setTooltipPosition({ 
+              x: squareX, 
+              y: squareY, 
+              width: squareSize, 
+              height: squareSize 
+            });
+          } else if (step.id === 'groups') {
+            const buttonCenterX = SCREEN_WIDTH / 2;
+            const squareX = buttonCenterX - squareSize / 2;
+            setTooltipPosition({ 
+              x: squareX, 
+              y: squareY, 
+              width: squareSize, 
+              height: squareSize 
+            });
+          }
         }
       }
       
@@ -281,6 +322,11 @@ export default function Dashboard() {
     setOnboardingActive(false);
   };
 
+  const handleStartOnboarding = () => {
+    setOnboardingActive(true);
+    setOnboardingStep(0);
+  };
+
   const handleRemoveEvent = async (eventId: number) => {
     try {
       const isDefaultEvent = defaultEvents.some(de => de.id === eventId);
@@ -316,6 +362,16 @@ export default function Dashboard() {
     <View style={styles.container}>
       <ScrollView>
       <View style={styles.headerRow}>
+        <View style={styles.helpContainer}>
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={handleStartOnboarding}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="help-circle-outline" size={44} color={COLORS.primary} />
+            <Text style={styles.helpLabel}>Help</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.profileContainer}>
           <GlowWrapper 
             showGlow={onboardingActive && onboardingStep === 3}
@@ -570,8 +626,39 @@ export default function Dashboard() {
         onSkip={handleSkipOnboarding}
         step={onboardingStep + 1}
         totalSteps={onboardingSteps.length}
-        showHighlight={onboardingStep > 0}
+        showHighlight={onboardingStep > 0 && onboardingStep < 4}
+        highlightPosition={null}
+        highlightAnimValue={glowAnim}
       />
+    )}
+    
+    {onboardingActive && (
+      <>
+        <View 
+          ref={createEventRef} 
+          style={{
+            position: 'absolute',
+            bottom: insets.bottom,
+            left: (SCREEN_WIDTH / 3) * 2,
+            width: SCREEN_WIDTH / 3,
+            height: 49,
+            zIndex: -1,
+          }}
+          collapsable={false}
+        />
+        <View 
+          ref={groupsRef} 
+          style={{
+            position: 'absolute',
+            bottom: insets.bottom,
+            left: SCREEN_WIDTH / 3,
+            width: SCREEN_WIDTH / 3,
+            height: 49,
+            zIndex: -1,
+          }}
+          collapsable={false}
+        />
+      </>
     )}
     </View>
   );
@@ -586,8 +673,23 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
+  },
+  helpContainer: {
+    position: "relative",
+    height: 74,
+  },
+  helpButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 10,
+  },
+  helpLabel: {
+    fontSize: 12,
+    color: COLORS.primary,
+    marginTop: 4,
+    fontWeight: "500",
   },
   profileContainer: {
     position: "relative",

@@ -34,6 +34,8 @@ interface TooltipProps {
   step?: number;
   totalSteps?: number;
   showHighlight?: boolean;
+  highlightPosition?: { x: number; y: number; width: number; height: number } | null;
+  highlightAnimValue?: Animated.Value;
 }
 
 export default function Tooltip({
@@ -49,6 +51,8 @@ export default function Tooltip({
   step,
   totalSteps,
   showHighlight = true,
+  highlightPosition,
+  highlightAnimValue,
 }: TooltipProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -83,10 +87,12 @@ export default function Tooltip({
     const tooltipX = position.x + position.width / 2;
     const tooltipY = position.y + position.height + 20;
     const isBottom = tooltipY > SCREEN_HEIGHT / 2;
+    // Check if this is a bottom tab bar button (very close to bottom of screen)
+    const isTabBarButton = position.y > SCREEN_HEIGHT - 100;
 
     adjustedX = Math.max(20, Math.min(tooltipX - 140, SCREEN_WIDTH - 300));
     adjustedY = isBottom 
-      ? position.y - 200 
+      ? (isTabBarButton ? position.y - 280 : position.y - 200) // Higher for tab bar buttons
       : tooltipY;
   } else {
     adjustedX = SCREEN_WIDTH / 2 - 140;
@@ -102,6 +108,33 @@ export default function Tooltip({
     >
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
+          {/* Highlight box for tab bar buttons */}
+          {highlightPosition && highlightAnimValue && (
+            <Animated.View
+              style={{
+                position: 'absolute',
+                left: highlightPosition.x,
+                top: highlightPosition.y,
+                width: highlightPosition.width,
+                height: highlightPosition.height,
+                borderWidth: 3,
+                borderColor: COLORS.primary,
+                borderRadius: 12,
+                shadowColor: COLORS.primary,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: highlightAnimValue.interpolate({
+                  inputRange: [1, 1.3],
+                  outputRange: [0.8, 1],
+                }),
+                shadowRadius: highlightAnimValue.interpolate({
+                  inputRange: [1, 1.3],
+                  outputRange: [15, 25],
+                }),
+                elevation: 15,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
           <Animated.View
             style={[
               styles.tooltip,
