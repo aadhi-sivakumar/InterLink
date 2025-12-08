@@ -51,6 +51,7 @@ export default function CreateEventDetailsScreen() {
 
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0].uri);
+      Alert.alert("Upload Successful", "Your event image was uploaded!");
     }
   };
 
