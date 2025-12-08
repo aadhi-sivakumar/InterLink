@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar } from "react-native-calendars";
@@ -151,6 +151,20 @@ export default function CreateEventScreen() {
 
   const formatDeviceTime = (date: Date) =>
     date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+  const isToday = (dateString: string) => {
+    if (!dateString) return false;
+    const [year, month, day] = dateString.split("-").map(Number);
+    const today = new Date();
+    return (
+      year === today.getFullYear() &&
+      month === today.getMonth() + 1 &&
+      day === today.getDate()
+    );
+  };
+
+  const getMinutesFromDate = (date: Date) =>
+    date.getHours() * 60 + date.getMinutes();
 
   const openStartPicker = () => {
     setTempStartTimeDate(startTimeDate);
@@ -401,7 +415,7 @@ export default function CreateEventScreen() {
                   value={tempStartTimeDate || startTimeDate}
                   mode="time"
                   display="spinner"
-                  textColor = "#000000"
+                  textColor="#000000"
                   onChange={handleStartTimeChange}
                 />
                 <View style={styles.modalButtonsRow}>
@@ -409,13 +423,26 @@ export default function CreateEventScreen() {
                     onPress={() => {
                       setShowStartPicker(false);
                       setTempStartTimeDate(null);
-                    }}
-                  >
+                    }}>
                     <Text style={styles.modalButtonText}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
                       const finalDate = tempStartTimeDate || startTimeDate;
+
+                      if (startDate && isToday(startDate)) {
+                        const now = new Date();
+                        const selectedMinutes = getMinutesFromDate(finalDate);
+                        const nowMinutes = getMinutesFromDate(now);
+
+                        if (selectedMinutes < nowMinutes) {
+                          Alert.alert(
+                            "Invalid time",
+                            "Start time cannot be in the past"
+                          );
+                          return;
+                        }
+                      }
                       setStartTimeDate(finalDate);
                       setStartTime(formatDeviceTime(finalDate));
                       setShowStartPicker(false);
@@ -444,7 +471,7 @@ export default function CreateEventScreen() {
                   value={tempEndTimeDate || endTimeDate}
                   mode="time"
                   display="spinner"
-                  textColor = "#000000"
+                  textColor="#000000"
                   onChange={handleEndTimeChange}
                 />
                 <View style={styles.modalButtonsRow}>
@@ -459,6 +486,18 @@ export default function CreateEventScreen() {
                   <TouchableOpacity
                     onPress={() => {
                       const finalDate = tempEndTimeDate || endTimeDate;
+                      if (startDate && endDate && startDate === endDate && startTime) {
+                        const endMinutes = getMinutesFromDate(finalDate);
+                        const startMinutes = getMinutesFromDate(startTimeDate);
+
+                        if (endMinutes <= startMinutes) {
+                          Alert.alert(
+                            "Invalid time",
+                            "End time must be later than the start time for same-day events."
+                          );
+                          return;
+                        }
+                      }
                       setEndTimeDate(finalDate);
                       setEndTime(formatDeviceTime(finalDate));
                       setShowEndPicker(false);
