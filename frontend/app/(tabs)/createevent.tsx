@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar } from "react-native-calendars";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Tooltip from "../../components/Tooltip";
+import { hasCompletedOnboarding } from "../../utils/onboarding";
 
 const COLORS = {
   primary: "#7CA7D9",
@@ -39,6 +41,9 @@ export default function CreateEventScreen() {
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [onboardingActive, setOnboardingActive] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const eventNameRef = useRef<View>(null);
 
   useEffect(() => {
     const loadJoinedGroups = async () => {
@@ -61,6 +66,23 @@ export default function CreateEventScreen() {
     };
     loadJoinedGroups();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkOnboarding = async () => {
+        const completed = await hasCompletedOnboarding();
+        if (!completed && eventNameRef.current) {
+          setTimeout(() => {
+            eventNameRef.current?.measure((x, y, width, height, pageX, pageY) => {
+              setTooltipPosition({ x: pageX, y: pageY, width, height });
+              setOnboardingActive(true);
+            });
+          }, 500);
+        }
+      };
+      checkOnboarding();
+    }, [])
+  );
 
   const handleDateSelect = (day: any) => {
     if (!startDate || (startDate && endDate)) {
@@ -224,8 +246,21 @@ export default function CreateEventScreen() {
               <TouchableOpacity
                 style={styles.menuItem}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => { 
+                  setMenuOpen(false);
+                  router.push('/editprofile');
+                }}
+              >
+                <Ionicons name="person-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.menuText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <View style={styles.menuDivider} />
+              <TouchableOpacity
+                style={styles.menuItem}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => { setMenuOpen(false); router.replace('/welcome'); }}
               >
+                <Ionicons name="log-out-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
                 <Text style={styles.menuText}>Sign out</Text>
               </TouchableOpacity>
             </View>
@@ -236,13 +271,15 @@ export default function CreateEventScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Event Name <Text style={styles.requiredAsterisk}>*</Text></Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter event name"
-            placeholderTextColor="#999"
-            value={eventName}
-            onChangeText={setEventName}
-          />
+          <View ref={eventNameRef} collapsable={false}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter event name"
+              placeholderTextColor="#999"
+              value={eventName}
+              onChangeText={setEventName}
+            />
+          </View>
         </View>
 
         <View style={styles.fieldGroup}>
@@ -529,6 +566,17 @@ export default function CreateEventScreen() {
           onChange={handleEndTimeChange}
         />
       )}
+
+      {onboardingActive && (
+        <Tooltip
+          visible={onboardingActive}
+          title="Create Your Event 🎉"
+          description="Fill in the event details, select dates and times, choose which groups can see it, then add a description and image on the next screen!"
+          position={tooltipPosition || { x: 0, y: 0, width: 0, height: 0 }}
+          onClose={() => setOnboardingActive(false)}
+          showSkip={false}
+        />
+      )}
     </View>
   );
 }
@@ -593,10 +641,17 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 14,
     paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
   },
   menuText: {
     fontSize: 14,
     color: "#111827",
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 4,
   },
   fieldGroup: {
     width: "100%",

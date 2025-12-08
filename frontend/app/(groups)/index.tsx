@@ -2,10 +2,13 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity} from "react-nativ
 import { SafeAreaView } from "react-native-safe-area-context";
 import MyGroups from "./_components/MyGroups";
 import FindGroups from "./_components/FindGroups";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
+import Tooltip from "../../components/Tooltip";
+import { hasCompletedOnboarding } from "../../utils/onboarding";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Groups() {
   const router = useRouter();
@@ -20,8 +23,10 @@ export default function Groups() {
     5: false
   });
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [onboardingActive, setOnboardingActive] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const toggleBarRef = useRef<View>(null);
 
-  // Load joined groups when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadGroups = async () => {
@@ -31,7 +36,6 @@ export default function Groups() {
             const parsed = JSON.parse(saved);
             setJoin(parsed);
           } else {
-            // Initialize with default if nothing saved
             const defaultGroups = {
               0: true,
               1: false,
@@ -48,12 +52,23 @@ export default function Groups() {
           console.error('Error loading groups:', error);
           setHasLoaded(true);
         }
-      }; 
+      };
+      const checkOnboarding = async () => {
+        const completed = await hasCompletedOnboarding();
+        if (!completed && toggleBarRef.current) {
+          setTimeout(() => {
+            toggleBarRef.current?.measure((x, y, width, height, pageX, pageY) => {
+              setTooltipPosition({ x: pageX, y: pageY, width, height });
+              setOnboardingActive(true);
+            });
+          }, 500);
+        }
+      };
       loadGroups();
+      checkOnboarding();
     }, [])
   );
 
-  // Save joined groups to AsyncStorage whenever state changes (but only after initial load)
   useEffect(() => {
     if (!hasLoaded) return;
     
@@ -85,8 +100,21 @@ export default function Groups() {
               <TouchableOpacity
                 style={styles.menuItem}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => { 
+                  setMenuOpen(false);
+                  router.push('/editprofile');
+                }}
+              >
+                <Ionicons name="person-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.menuText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <View style={styles.menuDivider} />
+              <TouchableOpacity
+                style={styles.menuItem}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => { setMenuOpen(false); router.replace('/welcome'); }}
               >
+                <Ionicons name="log-out-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
                 <Text style={styles.menuText}>Sign out</Text>
               </TouchableOpacity>
             </View>
@@ -95,7 +123,7 @@ export default function Groups() {
       </View>
       <Text style={styles.heading}>Groups</Text>
 
-      <View style={styles.toggleBar}>
+      <View ref={toggleBarRef} collapsable={false} style={styles.toggleBar}>
         <TouchableOpacity
           style={[
             styles.toggleButton,
@@ -127,6 +155,17 @@ export default function Groups() {
           {toggle === "mygroups" ? <MyGroups joined={joined}/> : <FindGroups joined={joined} setJoin={setJoin}/>}
         </ScrollView>
       </View>
+
+      {onboardingActive && (
+        <Tooltip
+          visible={onboardingActive}
+          title="Explore Groups 👥"
+          description="Switch between 'My Groups' to see groups you've joined, or 'Find Groups' to discover new communities to join!"
+          position={tooltipPosition || { x: 0, y: 0, width: 0, height: 0 }}
+          onClose={() => setOnboardingActive(false)}
+          showSkip={false}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -184,10 +223,17 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 14,
     paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
   },
   menuText: {
     fontSize: 14,
     color: "#111827",
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 4,
   },
   heading: { 
     marginTop: 10,

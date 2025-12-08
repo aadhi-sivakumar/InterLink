@@ -1,9 +1,12 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity } from "react-native";
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity, Modal, Animated } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getJoinedEventIds } from "../../utils/eventstorage";
+import Tooltip from "../../components/Tooltip";
+import { hasCompletedOnboarding, completeOnboarding } from "../../utils/onboarding";
+import GlowWrapper from "../../components/GlowWrapper";
 
 const defaultEvents = [
   { event: "Musical Boat Party", image: "https://m.media-amazon.com/images/I/81s4Yq0JJWL._AC_UF350,350_QL80_.jpg", date: "December 1st", time: "2:00 PM", location: "1234 Sesame St. ", id: 1 },
@@ -101,6 +104,14 @@ const sortEvents = (events: any[]) => {
 
 
 
+const COLORS = {
+  primary: "#7CA7D9",
+  border: "#003366",
+  textPrimary: "#000000",
+  textSecondary: "#444444",
+  background: "#FFFFFF",
+};
+
 export default function Dashboard() {
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -108,12 +119,47 @@ export default function Dashboard() {
   const [events, setEvents] = useState(defaultEvents);
   const [joinedEventIds, setJoinedEventIds] = useState<number[]>([]);
   const [removedEventIds, setRemovedEventIds] = useState<number[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  
+  const [onboardingActive, setOnboardingActive] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const searchBarRef = useRef<View>(null);
+  const eventCardRef = useRef<View>(null);
+  const profileRef = useRef<View>(null);
+  const glowAnim = useRef(new Animated.Value(1)).current;
+  
+  const onboardingSteps = [
+    {
+      id: 'welcome',
+      title: 'Welcome to InterLink! 👋',
+      description: 'Let\'s take a quick tour to help you get started. Tap anywhere to continue.',
+      ref: null,
+    },
+    {
+      id: 'search',
+      title: 'Search Events',
+      description: 'Use the search bar to find specific events by name, location, date, or time.',
+      ref: searchBarRef,
+    },
+    {
+      id: 'events',
+      title: 'View Event Details',
+      description: 'Tap on any event card to see full details including description, location, and more!',
+      ref: eventCardRef,
+    },
+    {
+      id: 'profile',
+      title: 'Your Profile',
+      description: 'Tap your profile icon to access settings and sign out.',
+      ref: profileRef,
+    },
+  ];
 
-  // Combine and sort all events, excluding removed ones
   const allEvents = useMemo(() => {
     const combined = [...defaultEvents, ...events];
     const unique = combined.filter((e, i, arr) => arr.findIndex(ev => ev.id === e.id) === i);
-    // Filter out removed events
     return sortEvents(unique.filter(ev => !removedEventIds.includes(ev.id)));
   }, [events, removedEventIds]);
 
@@ -134,7 +180,6 @@ export default function Dashboard() {
       defaultEvents.some(de => de.id === ev.id) ||
       joinedEventIds.includes(ev.id)
   );
-  // Load events from AsyncStorage when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadEvents = async () => {
@@ -144,12 +189,10 @@ export default function Dashboard() {
             const parsedEvents = JSON.parse(storedEvents);
             setEvents(parsedEvents);
           } else {
-            // Initialize with default events if no stored events
             await AsyncStorage.setItem('events', JSON.stringify(defaultEvents));
             setEvents(defaultEvents);
           }
           
-          // Load removed event IDs
           const storedRemoved = await AsyncStorage.getItem('removedEventIds');
           if (storedRemoved) {
             setRemovedEventIds(JSON.parse(storedRemoved));
@@ -164,23 +207,82 @@ export default function Dashboard() {
         //console.log("Loaded joined event ids: ", ids);
         setJoinedEventIds(ids);
       };
+      const checkOnboarding = async () => {
+        const completed = await hasCompletedOnboarding();
+        if (!completed) {
+          setTimeout(() => {
+            setOnboardingActive(true);
+            setOnboardingStep(0);
+          }, 500);
+        }
+      };
       loadEvents();
       loadJoinedEvents(); //loads which events the user joined
+      checkOnboarding();
     }, [])
   );
 
+  useEffect(() => {
+    if (onboardingActive) {
+      if (onboardingStep === 0) {
+        setTooltipPosition({ x: 0, y: 0, width: 0, height: 0 });
+      } else {
+        const step = onboardingSteps[onboardingStep];
+        if (step.ref?.current) {
+          setTimeout(() => {
+            step.ref.current?.measure((x, y, width, height, pageX, pageY) => {
+              setTooltipPosition({ x: pageX, y: pageY, width, height });
+            });
+          }, 100);
+        }
+      }
+      
+      if (onboardingStep > 0) {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(glowAnim, {
+              toValue: 1.3,
+              duration: 1000,
+              useNativeDriver: false,
+            }),
+            Animated.timing(glowAnim, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: false,
+            }),
+          ])
+        ).start();
+      } else {
+        glowAnim.setValue(1);
+      }
+    } else {
+      glowAnim.setValue(1);
+    }
+  }, [onboardingActive, onboardingStep]);
+
+  const handleNextOnboarding = () => {
+    if (onboardingStep < onboardingSteps.length - 1) {
+      setOnboardingStep(onboardingStep + 1);
+    } else {
+      completeOnboarding();
+      setOnboardingActive(false);
+    }
+  };
+
+  const handleSkipOnboarding = () => {
+    completeOnboarding();
+    setOnboardingActive(false);
+  };
+
   const handleRemoveEvent = async (eventId: number) => {
     try {
-      // Check if it's a default event or user-added event
       const isDefaultEvent = defaultEvents.some(de => de.id === eventId);
       
       if (isDefaultEvent) {
-        // For default events, just mark as removed
         const updatedRemoved = [...removedEventIds, eventId];
         setRemovedEventIds(updatedRemoved);
         await AsyncStorage.setItem('removedEventIds', JSON.stringify(updatedRemoved));
       } else {
-        // For user-added events, remove from events array and AsyncStorage
         const updatedEvents = events.filter(ev => ev.id !== eventId);
         setEvents(updatedEvents);
         await AsyncStorage.setItem('events', JSON.stringify(updatedEvents));
@@ -195,23 +297,43 @@ export default function Dashboard() {
       <ScrollView>
       <View style={styles.headerRow}>
         <View style={styles.profileContainer}>
-          <TouchableOpacity
-            style={styles.profileButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            onPress={() => setMenuOpen(!menuOpen)}
+          <GlowWrapper 
+            showGlow={onboardingActive && onboardingStep === 3}
+            animatedValue={glowAnim}
           >
-            <View style={styles.profileCircle}>
-              <Text style={styles.profileInitials}>Profile</Text>
+            <View ref={profileRef} collapsable={false}>
+              <TouchableOpacity
+                style={styles.profileButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => setMenuOpen(!menuOpen)}
+              >
+                <View style={styles.profileCircle}>
+                  <Text style={styles.profileInitials}>Profile</Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          </GlowWrapper>
           {menuOpen && (
             <View style={styles.menuInFlow} pointerEvents="auto">
+              <TouchableOpacity
+                style={styles.menuItem}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => { 
+                  setMenuOpen(false);
+                  router.push('/editprofile');
+                }}
+              >
+                <Ionicons name="person-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.menuText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <View style={styles.menuDivider} />
               <TouchableOpacity
                 style={styles.menuItem}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 onPress={() => { setMenuOpen(false); 
                 router.replace('/welcome'); }}
               >
+                <Ionicons name="log-out-outline" size={18} color="#111827" style={{ marginRight: 8 }} />
                 <Text style={styles.menuText}>Sign out</Text>
               </TouchableOpacity>
             </View>
@@ -219,7 +341,14 @@ export default function Dashboard() {
         </View>
       </View>
       <Text style={styles.heading}>Home</Text>
-      <TextInput style={styles.searchBar} placeholder="Search" value={search} onChangeText={setSearch}/>
+      <GlowWrapper 
+        showGlow={onboardingActive && onboardingStep === 1}
+        animatedValue={glowAnim}
+      >
+        <View ref={searchBarRef} collapsable={false}>
+          <TextInput style={styles.searchBar} placeholder="Search" value={search} onChangeText={setSearch}/>
+        </View>
+      </GlowWrapper>
       {/* SEARCH mode */}
       {search.trim().length > 0 ? (
         <>
@@ -227,8 +356,20 @@ export default function Dashboard() {
           {filteredEvents.length === 0 ? (
             <Text style={styles.resultsLabel}>No events found.</Text>
           ) : (
-            filteredEvents.map(ev => (
-              <View key={ev.id} style={styles.card}>
+            filteredEvents.map((ev, index) => (
+              <GlowWrapper 
+                key={ev.id}
+                showGlow={onboardingActive && onboardingStep === 2 && index === 0}
+                animatedValue={glowAnim}
+              >
+                <TouchableOpacity 
+                  style={styles.card}
+                  onPress={() => {
+                    setSelectedEvent(ev);
+                    setModalVisible(true);
+                  }}
+                  activeOpacity={0.9}
+                >
                 <Image source={{ uri: ev.image }} style={styles.image} />
                 <Text style={styles.eventName}>{ev.event}</Text>
                 <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
@@ -237,12 +378,16 @@ export default function Dashboard() {
                   {ev.location}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => handleRemoveEvent(ev.id)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleRemoveEvent(ev.id);
+                  }}
                   style={styles.removeButton}
                 >
                   <Text style={styles.removeButtonText}>Remove</Text>
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+              </GlowWrapper>
             ))
           )}
         </>
@@ -250,8 +395,21 @@ export default function Dashboard() {
         <>
           {/* DEFAULT mode */}
           <Text style={styles.subheading}>My Upcoming Events</Text>
-          {filteredEvents.map(ev => (
-            <View key={ev.id} style={styles.card}>
+          {filteredEvents.map((ev, index) => (
+            <GlowWrapper 
+              key={ev.id}
+              showGlow={onboardingActive && onboardingStep === 2 && index === 0}
+              animatedValue={glowAnim}
+            >
+              <TouchableOpacity 
+                ref={index === 0 ? eventCardRef : null}
+                style={styles.card}
+                onPress={() => {
+                  setSelectedEvent(ev);
+                  setModalVisible(true);
+                }}
+                activeOpacity={0.9}
+              >
               <Image source={{ uri: ev.image }} style={styles.image} />
               <Text style={styles.eventName}>{ev.event}</Text>
               <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
@@ -260,16 +418,109 @@ export default function Dashboard() {
                 {ev.location}
               </Text>
               <TouchableOpacity
-                onPress={() => handleRemoveEvent(ev.id)}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleRemoveEvent(ev.id);
+                }}
                 style={styles.removeButton}
               >
                 <Text style={styles.removeButtonText}>Remove</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
-            </View>
+            </GlowWrapper>
           ))}
         </>
       )}
     </ScrollView>
+
+    <Modal
+      visible={modalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Event Details</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {selectedEvent && (
+              <>
+                {selectedEvent.image && (
+                  <Image 
+                    source={{ uri: selectedEvent.image }} 
+                    style={styles.modalImage} 
+                  />
+                )}
+                <Text style={styles.modalEventName}>
+                  {selectedEvent.event || selectedEvent.title}
+                </Text>
+                
+                <View style={styles.modalDetailRow}>
+                  <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
+                  <Text style={styles.modalDetailText}>
+                    {formatDateRange(selectedEvent)}
+                  </Text>
+                </View>
+                
+                <View style={styles.modalDetailRow}>
+                  <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                  <Text style={styles.modalDetailText}>
+                    {formatTimeRange(selectedEvent)}
+                  </Text>
+                </View>
+                
+                <View style={styles.modalDetailRow}>
+                  <Ionicons name="location-outline" size={20} color={COLORS.primary} />
+                  <Text style={styles.modalDetailText}>
+                    {selectedEvent.location || "Location not specified"}
+                  </Text>
+                </View>
+                
+                {selectedEvent.description && (
+                  <View style={styles.modalDescriptionContainer}>
+                    <Text style={styles.modalDescriptionLabel}>Description</Text>
+                    <Text style={styles.modalDescriptionText}>
+                      {selectedEvent.description}
+                    </Text>
+                  </View>
+                )}
+                
+                {selectedEvent.group && (
+                  <View style={styles.modalDetailRow}>
+                    <Ionicons name="people-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.modalDetailText}>
+                      {selectedEvent.group}
+                    </Text>
+                  </View>
+                )}
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+
+    {onboardingActive && onboardingSteps[onboardingStep] && (
+      <Tooltip
+        visible={onboardingActive}
+        title={onboardingSteps[onboardingStep].title}
+        description={onboardingSteps[onboardingStep].description}
+        position={tooltipPosition || { x: 0, y: 0, width: 0, height: 0 }}
+        onClose={handleSkipOnboarding}
+        onNext={handleNextOnboarding}
+        showNext={onboardingStep < onboardingSteps.length - 1}
+        showSkip={true}
+        onSkip={handleSkipOnboarding}
+        step={onboardingStep + 1}
+        totalSteps={onboardingSteps.length}
+        showHighlight={onboardingStep > 0}
+      />
+    )}
     </View>
   );
 }
@@ -328,10 +579,17 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 14,
     paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
   },
   menuText: {
     fontSize: 14,
     color: "#111827",
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 4,
   },
   heading: {
     marginTop: 10,
@@ -439,5 +697,75 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  modalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
+    resizeMode: 'cover',
+  },
+  modalEventName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: 20,
+  },
+  modalDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  modalDetailText: {
+    fontSize: 16,
+    color: COLORS.textPrimary,
+    marginLeft: 12,
+    flex: 1,
+    lineHeight: 22,
+  },
+  modalDescriptionContainer: {
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+  },
+  modalDescriptionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+  },
+  modalDescriptionText: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+  },
 });

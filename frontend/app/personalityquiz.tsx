@@ -284,7 +284,25 @@ const [profileError, setProfileError] = useState("")
     setCameFromSummary(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    try {
+      const { saveProfile } = await import("../utils/profileStorage");
+      await saveProfile({
+        fullName: userInfo.fullName,
+        phoneNumber: userInfo.phoneNumber,
+        location: userInfo.location,
+        profileImage: profileImage,
+        homeCountry: cultureInfo.homeCountry,
+        languages: cultureInfo.languages,
+        timeInCountry: cultureInfo.timeInCountry,
+        reasonForComing: cultureInfo.reasonForComing,
+        supportLookingFor: cultureInfo.supportLookingFor,
+        importantTraditions: cultureInfo.importantTraditions,
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
+    
     Alert.alert("Success!", "Your personality quiz has been submitted!");
     setCurrentStep(0);
     setCurrentQuestion(0);

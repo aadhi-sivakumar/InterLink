@@ -106,6 +106,8 @@ export default function FriendGroupScreen() {
   const [chatMessages, setChatMessages] = useState(defaultChatMessages);
   const flatListRef = useRef<FlatList>(null);
   const currentUser = "You";
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [eventModalVisible, setEventModalVisible] = useState(false);
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -228,7 +230,14 @@ export default function FriendGroupScreen() {
     const isGoing = eventStatuses[event.id] ?? event.isGoing;
 
     return (
-      <View style={[styles.eventCard, isPrevious && styles.previousEventCard]}>
+      <TouchableOpacity 
+        style={[styles.eventCard, isPrevious && styles.previousEventCard]}
+        onPress={() => {
+          setSelectedEvent(event);
+          setEventModalVisible(true);
+        }}
+        activeOpacity={0.7}
+      >
         {event.image && event.image.trim() ? (
           <Image source={{ uri: event.image }} style={styles.eventImage} />
         ) : (
@@ -255,7 +264,10 @@ export default function FriendGroupScreen() {
           
                         <TouchableOpacity
                           style={[styles.actionButton, isGoing === false && styles.actionButtonActiveDecline]}
-                          onPress={() => handleEventResponse(event.id, false, event)}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleEventResponse(event.id, false, event);
+                          }}
                         >
                           <Ionicons 
                             name="close" 
@@ -270,7 +282,10 @@ export default function FriendGroupScreen() {
                         <View style = {{alignItems : 'center', marginRight: 8}}>
                         <TouchableOpacity
                           style={[styles.actionButton, isGoing === true && styles.actionButtonActiveAccept]}
-                          onPress={() => handleEventResponse(event.id, true, event)}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleEventResponse(event.id, true, event);
+                          }}
                         >
                           <Ionicons 
                             name="checkmark" 
@@ -283,7 +298,7 @@ export default function FriendGroupScreen() {
                       </View>
                     )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -496,6 +511,80 @@ export default function FriendGroupScreen() {
             >
               <Text style={styles.leaveButtonText}>Leave Group</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={eventModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEventModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Event Details</Text>
+              <TouchableOpacity onPress={() => setEventModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {selectedEvent && (
+                <>
+                  {selectedEvent.image && selectedEvent.image.trim() && (
+                    <Image 
+                      source={{ uri: selectedEvent.image }} 
+                      style={styles.eventModalImage} 
+                    />
+                  )}
+                  <Text style={styles.eventModalName}>
+                    {selectedEvent.title || selectedEvent.event}
+                  </Text>
+                  
+                  <View style={styles.eventModalDetailRow}>
+                    <Ionicons name="location-outline" size={20} color="#7CA7D9" />
+                    <Text style={styles.eventModalDetailText}>
+                      {selectedEvent.location || "Location not specified"}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.eventModalDetailRow}>
+                    <Ionicons name="calendar-outline" size={20} color="#7CA7D9" />
+                    <Text style={styles.eventModalDetailText}>
+                      {selectedEvent.date ? `${selectedEvent.date} ${selectedEvent.time}` : selectedEvent.time || "Date not specified"}
+                    </Text>
+                  </View>
+                  
+                  {selectedEvent.peopleGoing !== undefined && (
+                    <View style={styles.eventModalDetailRow}>
+                      <Ionicons name="people-outline" size={20} color="#7CA7D9" />
+                      <Text style={styles.eventModalDetailText}>
+                        {selectedEvent.peopleGoing} People Going
+                      </Text>
+                    </View>
+                  )}
+                  
+                  {selectedEvent.description && (
+                    <View style={styles.eventModalDescriptionContainer}>
+                      <Text style={styles.eventModalDescriptionLabel}>Description</Text>
+                      <Text style={styles.eventModalDescriptionText}>
+                        {selectedEvent.description}
+                      </Text>
+                    </View>
+                  )}
+                  
+                  {selectedEvent.group && (
+                    <View style={styles.eventModalDetailRow}>
+                      <Ionicons name="people-outline" size={20} color="#7CA7D9" />
+                      <Text style={styles.eventModalDetailText}>
+                        {selectedEvent.group}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -925,6 +1014,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
+  },
+  eventModalImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
+    resizeMode: 'cover',
+  },
+  eventModalName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 20,
+  },
+  eventModalDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  eventModalDetailText: {
+    fontSize: 16,
+    color: '#000',
+    marginLeft: 12,
+    flex: 1,
+    lineHeight: 22,
+  },
+  eventModalDescriptionContainer: {
+    marginTop: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+  },
+  eventModalDescriptionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+  },
+  eventModalDescriptionText: {
+    fontSize: 15,
+    color: '#444444',
+    lineHeight: 22,
   },
 });
 
