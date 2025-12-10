@@ -8,6 +8,7 @@ import { getJoinedEventIds } from "../../utils/eventstorage";
 import Tooltip from "../../components/Tooltip";
 import { hasCompletedOnboarding, completeOnboarding } from "../../utils/onboarding";
 import GlowWrapper from "../../components/GlowWrapper";
+import EditEventModal from "../../components/EditEventModal";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -132,6 +133,8 @@ export default function Dashboard() {
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [eventToRemove, setEventToRemove] = useState<number | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<any>(null);
   
   const [onboardingActive, setOnboardingActive] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
@@ -183,7 +186,7 @@ export default function Dashboard() {
   ];
 
   const allEvents = useMemo(() => {
-    const combined = [...defaultEvents, ...events];
+    const combined = [...events, ...defaultEvents];
     const unique = combined.filter((e, i, arr) => arr.findIndex(ev => ev.id === e.id) === i);
     return sortEvents(unique.filter(ev => !removedEventIds.includes(ev.id)));
   }, [events, removedEventIds]);
@@ -229,7 +232,6 @@ export default function Dashboard() {
       };
       const loadJoinedEvents = async () => {
         const ids = await getJoinedEventIds();
-        //console.log("Loaded joined event ids: ", ids);
         setJoinedEventIds(ids);
       };
       const checkOnboarding = async () => {
@@ -242,7 +244,7 @@ export default function Dashboard() {
         }
       };
       loadEvents();
-      loadJoinedEvents(); //loads which events the user joined
+      loadJoinedEvents();
       checkOnboarding();
     }, [])
   );
@@ -358,6 +360,20 @@ export default function Dashboard() {
     setEventToRemove(null);
   };
 
+  const handleEditSave = async () => {
+    try {
+      const storedEvents = await AsyncStorage.getItem('events');
+      if (storedEvents) {
+        const parsedEvents = JSON.parse(storedEvents);
+        setEvents(parsedEvents);
+      } else {
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error('Error reloading events:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -425,7 +441,6 @@ export default function Dashboard() {
           <TextInput style={styles.searchBar} placeholder="Search" value={search} onChangeText={setSearch}/>
         </View>
       </GlowWrapper>
-      {/* SEARCH mode */}
       {search.trim().length > 0 ? (
         <>
           <Text style={styles.resultsLabel}>Results for "{search.trim()}"</Text>
@@ -453,16 +468,29 @@ export default function Dashboard() {
                 <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
                   {ev.location}
                 </Text>
-                <TouchableOpacity
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setEventToRemove(ev.id);
-                    setConfirmVisible(true);
-                  }}
-                  style={styles.removeButton}
-                >
-                  <Text style={styles.removeButtonText}>Remove</Text>
-                </TouchableOpacity>
+                <View style={styles.cardActions}>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setEventToEdit(ev);
+                      setEditModalVisible(true);
+                    }}
+                    style={styles.editButton}
+                  >
+                    <Ionicons name="create-outline" size={16} color="#fff" />
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setEventToRemove(ev.id);
+                      setConfirmVisible(true);
+                    }}
+                    style={styles.removeButton}
+                  >
+                    <Text style={styles.removeButtonText}>Remove</Text>
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
               </GlowWrapper>
             ))
@@ -470,7 +498,6 @@ export default function Dashboard() {
         </>
       ) : (
         <>
-          {/* DEFAULT mode */}
           <Text style={styles.subheading}>My Upcoming Events</Text>
           {filteredEvents.map((ev, index) => (
             <GlowWrapper 
@@ -491,20 +518,33 @@ export default function Dashboard() {
               <Text style={styles.eventName}>{ev.event}</Text>
               <Text style={styles.eventDetails}>{formatTimeRange(ev)}</Text>
               <Text style={styles.eventDetails}>{formatDateRange(ev)}</Text>
-              <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
-                {ev.location}
-              </Text>
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  setEventToRemove(ev.id);
-                  setConfirmVisible(true);
-                }}
-                style={styles.removeButton}
-              >
-                <Text style={styles.removeButtonText}>Remove</Text>
+                  <Text style={[styles.eventDetails, { marginBottom: 10 }]}>
+                    {ev.location}
+                  </Text>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setEventToEdit(ev);
+                        setEditModalVisible(true);
+                      }}
+                      style={styles.editButton}
+                    >
+                      <Ionicons name="create-outline" size={16} color="#fff" />
+                      <Text style={styles.editButtonText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setEventToRemove(ev.id);
+                        setConfirmVisible(true);
+                      }}
+                      style={styles.removeButton}
+                    >
+                      <Text style={styles.removeButtonText}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
                 </TouchableOpacity>
-              </TouchableOpacity>
             </GlowWrapper>
           ))}
         </>
@@ -612,6 +652,16 @@ export default function Dashboard() {
         </View>
       </View>
     </Modal>
+
+    <EditEventModal
+      visible={editModalVisible}
+      event={eventToEdit}
+      onClose={() => {
+        setEditModalVisible(false);
+        setEventToEdit(null);
+      }}
+      onSave={handleEditSave}
+    />
 
     {onboardingActive && onboardingSteps[onboardingStep] && (
       <Tooltip
@@ -838,18 +888,36 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  removeButton: {
+  cardActions: {
+    flexDirection: "row",
+    gap: 8,
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  editButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  editButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  removeButton: {
     backgroundColor: "#FF0000",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 8,
   },
   removeButtonText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
   },
   confirmOverlay: {
