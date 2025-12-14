@@ -12,23 +12,6 @@ Mobile app for international migrants struggling to find a support system or loo
 * **Create events**: Users can create custom social events for a social group 
 * **Search**: Search on the homepage for upcoming events 
 
-## Quality Argument
-InterLink is a social platform developed for international migrants looking for low pressure ways to adapt socially. It aims to create personalized experiences through which users can maximize benefits and minimize struggles as a community. Our team has developed a clear, efficient, and user friendly app for users to engage easily and have a pleasurable experience. 
-
-### VISUALIZATION
-Using a visual hierarchy system, different levels and depth of information are presented in layers. For instance, on our home page, each event has a title, location, and time on the main card for quick scanning. If the user wants to find more information, they can click on the event, which will pull a pop up that displays more details. This way, we prevent any sort of cognitive overload and make it easier for the user to read and manage information.  
-
-In addition, we have utilized a minimalist design, with few colors, simple layouts, and bubbly presentation styles. This keeps it easy to locate various levels of information while also creating a pleasing experience when moving through workflows in the app. 
-
-### NAVIGATION
-Through the use of purposeful icons, symbols, labels, and buttons, we have made it easy for users to navigate through the app. Everything is self explanatory as the buttons speak for themselves and utilize color coding to help the user understand what has been processed. For instance, when the user accepts an event, the button turns green, helping confirm that the event has been updated as per the user’s request. In addition, we have made it extremely easy for users to navigate between pages. In our personality quiz, rather than having to backtrack all the way to a specific question to edit it, the user can simply click on an edit icon at the end and a back to summary icon at every question to simply jump from anywhere. This prevents overload and effort on the users side, saving time and energy by making everything quickly accessible. In addition, the app includes a help guide that walks users through the app at any point with a visual of where various features are located. 
-
-### PERSONALIZATION
-Interlink reads users' personalities based on a short quiz during the registration process. Based on answers, it will process a set of groups they can join. This creates a more personalized experience as the events and people they interact with will align with their expectations and create smooth transitions into friendships. 
-
-###
-Overall, we have designed our app in a way that simplifies work, clearly manages data, and provides a satisfying overall experience for the user. 
-
 
 ## Requirements
 * iOS mobile device or Android 
@@ -103,6 +86,38 @@ Allows users to create a custom social event.
 
 1. Enter event details as instructed 
 2. Post event 
+
+## UI Updates
+### Overall
+1. Added help guide to teach users how to navigate app
+2. Enabled profile editing 
+
+### Personality Quiz
+1. Added inline validation
+2. Added editing abilities after completing quiz
+3. Redesigned screen scrolling to prevent keyboard from covering required feature
+4. Added "back to summary" button at each question for backtracking
+5. Added clearer instructions for photo identification
+
+### Home page
+1. Made events interactable by adding popup when clicked
+2. Added remove button on each event to remove previously added events
+
+### Find Groups Pages
+1. Redesinged display 
+2. Added categorical labels with varied text colors
+3. Added meeting frequency and clearer group descriptions
+
+### Events Page
+1. Added labels to accept and decline events
+
+### Create Events Screen
+1. Changed 24hr format for user input to 12hr 
+2. Added confirmation message after photo upload for event
+3. Added inline validation
+4. Updated date selection to only present and future dates
+5. Updated date selector to include both range of dates and singular date
+6. Added popup to confirm event as added
 
 ## Demonstration
 * Video Link: https://www.youtube.com/shorts/72CBEaOlbK0
